@@ -1,2 +1,0 @@
-xor(state)
-value(+state,[x1;x2],[v0;v1])

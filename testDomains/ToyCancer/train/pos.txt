@@ -1,4 +1,0 @@
-cancer(alice)
-cancer(bob)
-cancer(chuck)
-cancer(fred)

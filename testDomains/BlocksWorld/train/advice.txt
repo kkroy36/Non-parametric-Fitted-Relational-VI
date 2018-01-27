@@ -1,1 +1,0 @@
-putdown(F):-on(F,H,Z),ontable(F,Z,table) [putdown] []

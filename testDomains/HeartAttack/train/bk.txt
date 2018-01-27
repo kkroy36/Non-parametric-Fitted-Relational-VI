@@ -1,3 +1,0 @@
-ha(person)
-chol(+person,[low;medium;high])
-race(+person,[r1;r2])

@@ -1,8 +1,0 @@
-put(b1,s7)
-put(b2,s3)
-put(b3,s1)
-put(b4,s9)
-put(b5,s3)
-put(b6,s7)
-put(b7,s1)
-put(b8,s9)

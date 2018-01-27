@@ -1,4 +1,0 @@
-friends(+person,-person)
-friends(-person,+person)
-smokes(+person)
-cancer(person)

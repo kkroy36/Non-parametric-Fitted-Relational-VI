@@ -1,3 +1,0 @@
-cancer(zod)
-cancer(xena)
-cancer(yoda)

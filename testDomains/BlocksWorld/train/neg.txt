@@ -1,5 +1,0 @@
-putdown(s0)
-putdown(s1)
-putdown(s2)
-putdown(s3)
-putdown(s7)

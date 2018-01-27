@@ -1,2 +1,0 @@
-cancer(dan)
-cancer(earl)

@@ -1,1 +1,0 @@
-ha(P):-chol(P,medium),race(P,r1) [ha] []
