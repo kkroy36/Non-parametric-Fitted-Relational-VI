@@ -70,23 +70,23 @@ class Boosting(object):
                 sumOfGradients = Boosting.computeSumOfGradients(example,trees,data)
                 trueValue = data.getExampleTrueValue(example)
                 exampleValue = sumOfGradients
-                if loss == "LS":
+                if loss == "LS": #if loss == "LS" gradient is y-yhat
                     updatedGradient = trueValue - exampleValue
                     data.examples[example] = updatedGradient
-                elif loss == "LAD":
+                elif loss == "LAD": #if loss == "LAD" gradient is sign(y-yhat)
                     updatedGradient = 0
                     gradient = trueValue - exampleValue
                     if gradient:
                         updatedGradient = gradient/float(abs(gradient))
                     data.examples[example] = updatedGradient
-                elif loss == "Huber":
+                elif loss == "Huber": #if loss == "Huber" gradient is y-yhat if difference less than delta, else same as LAD.
                     gradient = trueValue - exampleValue
                     updatedGradient = 0
                     if gradient:
                         if gradient > float(delta):
-                            updatedGradient = gradient/float(abs(gradient))
+                            updatedGradient = gradient/float(abs(gradient)) #same as LAD part i.e. sign(y-yhat)
                         elif gradient <= float(delta):
-                            updatedGradient = gradient
+                            updatedGradient = gradient #else just y-yhat, same as LS. so equal to LS given delta == infinity.
                     data.examples[example] = updatedGradient
 
     @staticmethod
