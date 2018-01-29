@@ -34,14 +34,14 @@ class GradientBoosting(object):
                 node.setMaxDepth(self.treeDepth)
                 node.learnTree(data)
                 trees.append(node.learnedDecisionTree)
-                Boosting.updateGradients(data,trees)
+                Boosting.updateGradients(data,trees,loss=loss)
             self.trees[target] = trees
             for tree in trees:
                 print ('='*30,"tree",str(trees.index(tree)),'='*30)
                 for clause in tree:
                     print (clause)
 
-    def infer(self,loss = "LS"):
+    def infer(self):
         '''infers probability or regression value'''
         for target in self.targets:
             testData = Utils.readTestData(target,self.regression)
