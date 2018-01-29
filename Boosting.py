@@ -44,7 +44,7 @@ class Boosting(object):
         return sumOfGradients #return the sum
 
     @staticmethod
-    def updateGradients(data,trees,loss="LS",delta=50.0): #if gradient greater than 50 then don't fit this gradient.
+    def updateGradients(data,trees,loss="LS",delta=999.0):
         '''updates the gradients of the data'''
         if not data.regression:
             logPrior = Boosting.logPrior
