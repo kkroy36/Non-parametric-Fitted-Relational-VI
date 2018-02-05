@@ -18,8 +18,17 @@ class City(object):
                 return truck
         return False
 
+    def remove_truck(self,truck_to_remove):
+        print ("city: ",str(self))
+        print ("removing truck: ",truck_to_remove)
+        self.trucks = [truck for truck in self.trucks if str(truck)!=str(truck_to_remove)]
+        print ("trucks after removing: ",self.trucks)
+
     def get_trucks(self):
         return self.trucks
+
+    def get_number(self):
+        return self.city_number
 
     def get_unloaded_box(self,box_number):
         for box in self.unloaded_boxes:
@@ -27,8 +36,17 @@ class City(object):
                 return box
         return False
 
+    def remove_unloaded_box(self,b):
+        self.unloaded_boxes = [box for box in self.unloaded_boxes if str(box)!=str(b)]
+
     def add_truck(self,truck):
-        self.trucks.append(truck)
+        print ("city: ",str(self))
+        print ("adding truck: ",truck)
+        print ("right before adding: ",self.trucks)
+        truck.change_location(self)
+        if str(truck) not in [str(s) for s in self.trucks]:
+            self.trucks += [truck]
+            print ("trucks after appending: ",self.trucks)
 
     def add_unloaded_box(self,box):
         self.unloaded_boxes.append(box)
@@ -114,7 +132,7 @@ class Truck(object):
     def __repr__(self):
         return "t"+str(self.truck_number)
 
-class State(object): #represents a world state
+class Logistics(object): #represents a world state
 
     def get_move_combinations(self,trucks,cities):
         combinations = []
@@ -125,8 +143,9 @@ class State(object): #represents a world state
 
     def get_load_combinations(self,trucks):
         combinations = []
+        for city in self.cities:
+            boxes = city.unloaded_boxes
         for truck in trucks:
-            boxes = truck.get_boxes()
             for box in boxes:
                 combinations.append("load(s"+str(self.state_number)+","+str(box)+","+str(truck)+").")
         return combinations
@@ -139,7 +158,7 @@ class State(object): #represents a world state
                 combinations.append("unload(s"+str(self.state_number)+","+str(box)+","+str(truck)+").")
         return combinations
 
-    def __init__(self,number,start=False):
+    def __init__(self,number=1,start=False):
         self.MAX_TRUCKS = 3
         self.state_number = number
         self.cities = None
@@ -149,6 +168,21 @@ class State(object): #represents a world state
             self.cities = [City(1)] #always start at source city
             self.trucks = self.init_trucks()
         self.all_actions = None
+
+    def goal(self): #at least one box in city 3
+        if not self.get_city(3):
+            return False
+        for city in self.cities:
+            if city.get_number() == 3 and len(city.unloaded_boxes) > 0:
+                print city.unloaded_boxes
+                return True
+        return False
+
+    def get_city(self,city_number):
+        for city in self.cities:
+            if city.get_number() == city_number:
+                return city
+        return False
 
     def init_trucks(self,number_of_trucks=False):
         if not number_of_trucks:
@@ -175,34 +209,45 @@ class State(object): #represents a world state
     def add_city(self,city):
         if str(city) not in [str(c) for c in self.cities]:
             self.cities.append(city)
+            print ("new city added")
 
     def execute_action(self,action):
-        print (action)
-        raw_input()
+        print ('='*80)
+        print ("action: ",action)
+        self.state_number += 1
         action_description = action.split('(')[0]
         if action_description == "move":
             destination_city_number = int(action.split(',')[2][1:-2])
             destination_city = City(destination_city_number)
             move_truck_number = int(action.split(',')[1][1:])
+            self.add_city(destination_city)
             for city in self.cities:
-                #trucks = city.get_trucks()
                 move_truck = city.get_truck(move_truck_number)
-                if not move_truck:
+                if str(city) == str(destination_city):
+                    print ("source and destination same")
                     return self
-                move_truck.change_location(destination_city)
-                self.add_city(destination_city)
+                if not move_truck:
+                    print ("truck in not city")
+                    continue
+                city.remove_truck(move_truck)
+                destination_city.add_truck(move_truck)
+                break
         if action_description == "unload":
             unload_truck_number = int(action.split(',')[2][1:-2])
             box_number = int(action.split(',')[1][1:])
             for city in self.cities:
                 unload_truck = city.get_truck(unload_truck_number)
                 if not unload_truck:
-                    return self
+                    print ("truck not among: ",city.get_trucks())
+                    continue
                 box = unload_truck.get_box(box_number)
                 if not box:
+                    print ("box not on unload truck: ",truck.get_boxes())
                     return self
+                print ("before unloading: ",unload_truck.get_boxes())
                 unload_truck.remove_box(box)
                 city.add_unloaded_box(box)
+                break
         if action_description == "load":
             load_truck_number = int(action.split(',')[2][1:-2])
             box_number = int(action.split(',')[1][1:])
@@ -210,14 +255,17 @@ class State(object): #represents a world state
                 trucks = city.get_trucks()
                 load_truck = city.get_truck(load_truck_number)
                 if not load_truck:
-                    return self
+                    continue
                 for truck in trucks:
                     if truck.get_box(box_number):
                         return self
                 box = city.get_unloaded_box(box_number)
                 if not box:
                     return self
+                print ("before loading: ",load_truck.get_boxes())
                 load_truck.add_box(box)
+                city.remove_unloaded_box(box)
+                break
         return self
 
     def execute_random_action(self):
@@ -243,8 +291,10 @@ class State(object): #represents a world state
         box_string = ",".join(str(box) for box in all_boxes)
         return_string += "boxes: "+box_string+"\n"
         return return_string
-        
+
+'''
 start_state = State(1,start=True)
 print (start_state)
 for i in range(10):
     print (start_state.execute_random_action())
+'''
