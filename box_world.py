@@ -5,7 +5,9 @@ from copy import deepcopy
 
 class City(object):
 
+
     MAX_CITIES = 3
+    after_addition_check = None
 
     def __init__(self,number):
         self.trucks = []
@@ -47,6 +49,7 @@ class City(object):
         if str(truck) not in [str(s) for s in self.trucks]:
             self.trucks += [truck]
             print ("trucks after appending: ",self.trucks)
+            City.after_addition_check = self.trucks
 
     def add_unloaded_box(self,box):
         self.unloaded_boxes.append(box)
@@ -223,14 +226,17 @@ class Logistics(object): #represents a world state
             self.add_city(destination_city)
             for city in self.cities:
                 move_truck = city.get_truck(move_truck_number)
-                if str(city) == str(destination_city):
-                    print ("source and destination same")
-                    return self
                 if not move_truck:
-                    print ("truck in not city")
+                    print ("truck in not city",city)
                     continue
+                if str(city) == str(destination_city):
+                    print ("source and destination same",city,destination_city)
+                    return self
                 city.remove_truck(move_truck)
                 destination_city.add_truck(move_truck)
+                for city in self.cities:
+                    if str(city) == str(destination_city):
+                        city.trucks = City.after_addition_check
                 break
         if action_description == "unload":
             unload_truck_number = int(action.split(',')[2][1:-2])
