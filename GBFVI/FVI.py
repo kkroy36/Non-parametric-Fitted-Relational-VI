@@ -53,7 +53,7 @@ class FVI(object):
                     examples.append(example_predicate)
                     #print (example_predicate)
                 i += 1
-        reg = GradientBoosting(regression = True,treeDepth=4)
+        reg = GradientBoosting(regression = True,treeDepth=3,loss="LS")
         reg.setTargets(["value"])
         reg.learn(facts,examples,bk)
 

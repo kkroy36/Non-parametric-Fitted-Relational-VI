@@ -8,13 +8,14 @@ from os import system
 
 class GradientBoosting(object):
 
-    def __init__(self,regression=False,trees=10,treeDepth=2):
+    def __init__(self,regression=False,trees=10,treeDepth=2,loss=None):
         self.targets = None
         self.regression = regression
         self.numberOfTrees = trees
         self.treeDepth = treeDepth
         self.trees = {}
         self.data = None
+        self.loss = loss
         self.testPos,testNeg,testExamples = {},{},{}
 
     def setTargets(self,targets):
@@ -29,7 +30,7 @@ class GradientBoosting(object):
                 node.setMaxDepth(self.treeDepth)
                 node.learnTree(data)
                 trees.append(node.learnedDecisionTree)
-                Boosting.updateGradients(data,trees)
+                Boosting.updateGradients(data,trees,loss=self.loss)
         self.trees[target] = trees
         for tree in trees:
             print ('='*30,"tree",str(trees.index(tree)),'='*30)
