@@ -1,4 +1,4 @@
-from random import randint,choice
+from random import randint,choice,random
 from copy import deepcopy
 
 #implicitly all cities assumed interconnected
@@ -274,11 +274,42 @@ class Logistics(object): #represents a world state
                 break
         return self
 
-    def execute_random_action(self):
+    def get_state_facts(self):
+        facts = []
+        for city in self.cities:
+            for truck in city.get_trucks():
+                for box in truck.get_boxes():
+                    box_fact = "bOn(s"+str(self.state_number)+","+str(box)+","+str(truck)+")"
+                    facts.append(box_fact)
+                truck_fact = "tIn(s"+str(self.state_number)+","+str(truck)+","+str(city)+")"
+                facts.append(truck_fact)
+            if str(city) == "c3": #destination city
+                city_fact = "destination(s"+str(self.state_number)+","+str(city)+")"
+                facts.append(city_fact)
+            for box in city.unloaded_boxes:
+                city_fact = "bIn(s"+str(self.state_number)+","+str(box)+","+str(city)+")"
+                facts.append(city_fact)
+        return facts
+
+    def sample(self,pdf):
+        cdf = [(i, sum(p for j,p in pdf if j < i)) for i,_ in pdf]
+        R = max(i for r in [random()] for i,c in cdf if c <= r)
+        return R
+
+    def execute_random_action(self,N=2):
         self.get_all_actions()
-        random_action = choice(self.all_actions)
-        new_state = self.execute_action(random_action)
-        return new_state
+        random_actions = []
+        action_potentials = []
+        for i in range(N):
+            random_action = choice(self.all_actions)
+            random_actions.append(random_action)
+            action_potentials.append(randint(1,9))
+        action_probabilities = [potential/float(sum(action_potentials)) for potential in action_potentials]
+        actions_not_executed = [action for action in self.all_actions if action != random_action]
+        probability_distribution_function = zip(random_actions,action_probabilities)
+        sampled_action = self.sample(probability_distribution_function)
+        new_state = self.execute_action(sampled_action)
+        return (new_state,[random_action],actions_not_executed)
         
     def __repr__(self):
         return_string = ""
