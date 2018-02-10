@@ -1,2 +1,2 @@
 from FVI import FVI
-FVI(simulator="wumpus")
+FVI(simulator="blocks")

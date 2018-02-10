@@ -1,5 +1,6 @@
 from box_world import Logistics
 from wumpus import Wumpus
+from blocks import Blocks_world
 #from pong import Pong #--> uncomment to run Pong
 #from tetris import Tetris #--> uncomment to run Tetris
 from time import clock
@@ -15,7 +16,7 @@ class FVI(object):
         self.model = None
         self.compute_transfer_model()
 
-    def compute_value_of_trajectory(self,values,trajectory,discount_factor=0.9,goal_value=10,AVI=False): 
+    def compute_value_of_trajectory(self,values,trajectory,discount_factor=0.9,goal_value=1,AVI=False): 
         reversed_trajectory = trajectory[::-1]
         number_of_transitions = len(reversed_trajectory)
         if not AVI:
@@ -61,6 +62,10 @@ class FVI(object):
                 state = Wumpus(start=True)
                 if not bk:
                     bk = Wumpus.bk
+            elif self.simulator == "blocks":
+                state = Blocks_world(start=True)
+                if not bk:
+                    bk = Blocks_world.bk
             with open(self.simulator+"_transfer_out.txt","a") as f:
                 if self.transfer:
                     f.write("start state: "+str(state.get_state_facts())+"\n")
@@ -86,6 +91,13 @@ class FVI(object):
                         break
                     elif self.simulator == "tetris" and time_elapsed > 1000:
                         within_time = False
+                        break
+                    elif self.simulator == "wumpus" and time_elapsed > 1:
+                        within_time = False
+                        break
+                    elif self.simulator == "blocks" and time_elapsed > 1:
+                        within_time = False
+                        break
                 if within_time:
                     self.compute_value_of_trajectory(values,trajectory)
                     for key in values:
@@ -132,6 +144,10 @@ class FVI(object):
                     state = Wumpus(start=True)
                     if not bk:
                         bk = Wumpus.bk
+                elif self.simulator == "blocks":
+                    state = Blocks_world(start=True)
+                    if not bk:
+                        bk = Blocks_world.bk
                 with open(self.simulator+"_FVI_out.txt","a") as fp:
                     fp.write("*"*80+"\nstart state: "+str(state.get_state_facts())+"\n")
                     time_elapsed = 0
@@ -154,8 +170,13 @@ class FVI(object):
                             break
                         elif self.simulator == "tetris" and time_elapsed > 10:
                             within_time = False
+                            break
                         elif self.simulator == "wumpus" and time_elapsed > 1:
                             within_time = False
+                            break
+                        elif self.simulator == "blocks" and time_elapsed > 1:
+                            within_time = False
+                            break
                     if within_time:
                         self.compute_value_of_trajectory(values,trajectory,AVI=True)
                         for key in values:

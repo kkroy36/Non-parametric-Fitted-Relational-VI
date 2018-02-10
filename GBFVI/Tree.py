@@ -128,6 +128,12 @@ class node(object):
         if self.parent!="root":
                 tests = [test for test in tests if not test in ancestorTests]
         tests = sorted(list(set(tests)))
+        if not tests:
+            if clause[-1]!='-':
+                node.learnedDecisionTree.append(clause[:-1]+" "+str(Utils.getleafValue(self.examples)))
+            else:
+                node.learnedDecisionTree.append(clause+" "+str(Utils.getleafValue(self.examples)))
+            return
         for test in tests: #see which test scores the best
             tExamples = self.getTrueExamples(clause,test,data) #get examples satisfied
             fExamples = [example for example in self.examples if example not in tExamples] #get examples unsatsified (closed world assumption made)
