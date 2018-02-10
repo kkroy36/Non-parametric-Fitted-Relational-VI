@@ -4,7 +4,7 @@ from GradientBoosting import GradientBoosting
 
 class FVI(object):
 
-    def __init__(self,burn_in_time=2,simulator="logistics",batch_size=2,number_of_iterations=5):
+    def __init__(self,burn_in_time=0,simulator="logistics",batch_size=1,number_of_iterations=10):
         self.burn_in_time = burn_in_time
         self.simulator = simulator
         self.batch_size = batch_size
@@ -12,21 +12,36 @@ class FVI(object):
         self.model = None
         #self.facts,self.examples,self.bk = [],[],[] 
 
-    def compute_value_of_trajectory(self,values,trajectory,discount_factor=0.9,goal_value=10): 
+    def compute_value_of_trajectory(self,values,trajectory,discount_factor=0.9,goal_value=10,AVI=False): 
         reversed_trajectory = trajectory[::-1]
         number_of_transitions = len(reversed_trajectory)
-        for i in range(number_of_transitions):
-            state_number = reversed_trajectory[i][0]
-            state = reversed_trajectory[i][1]
-            value_of_state = (goal_value)*(discount_factor**i) #immediate reward 0
-            key = (state_number,tuple(state))
-            values[key] = value_of_state
+        if not AVI:
+            for i in range(number_of_transitions):
+                state_number = reversed_trajectory[i][0]
+                state = reversed_trajectory[i][1]
+                value_of_state = (goal_value)*(discount_factor**i) #immediate reward 0
+                key = (state_number,tuple(state))
+                values[key] = value_of_state
+        elif AVI:
+            for i in range(number_of_transitions-1):
+                state_number = trajectory[i][0]
+                state = trajectory[i][1]
+                next_state_number = trajectory[i+1][0]
+                next_state = trajectory[i+1][1]
+                facts = list(next_state)
+                examples = ["value(s"+str(next_state_number)+") "+str(0.0)]
+                self.model.infer(facts,examples)
+                value_of_next_state = self.model.testExamples["value"]["value(s"+str(next_state_number)+")"]
+                value_of_state = discount_factor*value_of_next_state
+                key = (state_number,tuple(state))
+                values[key] = value_of_state
+                
             
     def compute_burn_in_values(self):
         facts,examples,bk = [],[],[]
         i = 0
         values = {}
-        while i < self.burn_in_time:
+        while i < self.burn_in_time+1:
             if self.simulator == "logistics":
                 state = Logistics(start=True)
                 if not bk:
@@ -93,7 +108,7 @@ class FVI(object):
                     if time_elapsed > 0.5:
                         break
                 if time_elapsed <= 0.5:
-                    self.compute_value_of_trajectory(values,trajectory)
+                    self.compute_value_of_trajectory(values,trajectory,AVI=True)
                     for key in values:
                         facts += list(key[1])
                         example_predicate = "value(s"+str(key[0])+") "+str(values[key])

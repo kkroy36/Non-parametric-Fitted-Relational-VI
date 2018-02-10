@@ -38,6 +38,7 @@ class GradientBoosting(object):
                 print (clause)
 
     def infer(self,facts,examples):
+        self.testExamples = {}
         for target in self.targets:
             data = Utils.setTestData(target=target,facts=facts,examples=examples,regression=self.regression)
             Boosting.performInference(data,self.trees[target])

@@ -1,2 +1,0 @@
-iteration: 0 average bellman error: 5.94835596417
-iteration: 1 average bellman error: 3.86626269529
