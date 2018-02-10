@@ -4,7 +4,7 @@ from GradientBoosting import GradientBoosting
 
 class FVI(object):
 
-    def __init__(self,burn_in_time=0,simulator="logistics",batch_size=1,number_of_iterations=10):
+    def __init__(self,transfer=0,simulator="logistics",batch_size=1,number_of_iterations=20):
         self.burn_in_time = burn_in_time
         self.simulator = simulator
         self.batch_size = batch_size
@@ -37,7 +37,7 @@ class FVI(object):
                 values[key] = value_of_state
                 
             
-    def compute_burn_in_values(self):
+    def compute_transfer_model(self):
         facts,examples,bk = [],[],[]
         i = 0
         values = {}
@@ -125,5 +125,5 @@ class FVI(object):
             self.model.learn(facts,examples,bk)
 
 f = FVI()
-f.compute_burn_in_values()
+f.compute_transfer_model()
             
