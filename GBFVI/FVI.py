@@ -1,17 +1,17 @@
 from box_world import Logistics
+#from pong import Pong #--> uncomment to run Pong
 from time import clock
 from GradientBoosting import GradientBoosting
 
 class FVI(object):
 
-    def __init__(self,transfer=0,simulator="logistics",batch_size=1,number_of_iterations=20):
+    def __init__(self,transfer=0,simulator="logistics",batch_size=1,number_of_iterations=10):
         self.transfer = transfer
         self.simulator = simulator
         self.batch_size = batch_size
         self.number_of_iterations = number_of_iterations
         self.model = None
         self.compute_transfer_model()
-        #self.facts,self.examples,self.bk = [],[],[] 
 
     def compute_value_of_trajectory(self,values,trajectory,discount_factor=0.9,goal_value=10,AVI=False): 
         reversed_trajectory = trajectory[::-1]
@@ -42,31 +42,45 @@ class FVI(object):
         facts,examples,bk = [],[],[]
         i = 0
         values = {}
-        while i < self.transfer+1:
+        while i < self.transfer+1: #at least one iteration burn in time
             if self.simulator == "logistics":
                 state = Logistics(start=True)
                 if not bk:
                     bk = Logistics.bk
-            print ("start state: ",state.get_state_facts())
-            time_elapsed = 0
-            start = clock()
-            trajectory = [(state.state_number,state.get_state_facts())]
-            while not state.goal():
-                print ("="*80)
-                state_action_pair = state.execute_random_action()
-                state = state_action_pair[0] #state
-                trajectory.append((state.state_number,state.get_state_facts()))
-                end = clock()
-                time_elapsed = abs(end-start)
-                if time_elapsed > 0.5:
-                    break
-            if time_elapsed <= 0.5:
-                self.compute_value_of_trajectory(values,trajectory)
-                for key in values:
-                    facts += list(key[1])
-                    example_predicate = "value(s"+str(key[0])+") "+str(values[key])
-                    examples.append(example_predicate)
-                i += 1
+            elif self.simulator == "pong":
+                state = Pong(start=True)
+                if not bk:
+                    bk = Pong.bk
+            with open(self.simulator+"_transfer_out.txt","a") as f:
+                if self.transfer:
+                    f.write("start state: "+str(state.get_state_facts())+"\n")
+                time_elapsed = 0
+                within_time = True
+                start = clock()
+                trajectory = [(state.state_number,state.get_state_facts())]
+                while not state.goal():
+                    if self.transfer:
+                        f.write("="*80+"\n")
+                    state_action_pair = state.execute_random_action()
+                    state = state_action_pair[0] #state
+                    if self.transfer:
+                        f.write(str(state.get_state_facts())+"\n")
+                    trajectory.append((state.state_number,state.get_state_facts()))
+                    end = clock()
+                    time_elapsed = abs(end-start)
+                    if self.simulator == "logistics" and time_elapsed > 0.5:
+                        within_time = False
+                        break
+                    elif self.simulator == "pong" and time_elapsed > 1000:
+                        within_time = False
+                        break
+                if within_time:
+                    self.compute_value_of_trajectory(values,trajectory)
+                    for key in values:
+                        facts += list(key[1])
+                        example_predicate = "value(s"+str(key[0])+") "+str(values[key])
+                        examples.append(example_predicate)
+                    i += 1
         reg = GradientBoosting(regression = True,treeDepth=2)
         reg.setTargets(["value"])
         reg.learn(facts,examples,bk)
@@ -85,7 +99,6 @@ class FVI(object):
         return sum(bellman_error)/float(len(bellman_error)) #average bellman error
 
     def AVI(self):
-        f = open("result.txt","a")
         for i in range(self.number_of_iterations):
             j = 0
             facts,examples,bk = [],[],[]
@@ -95,30 +108,42 @@ class FVI(object):
                     state = Logistics(start=True)
                     if not bk:
                         bk = Logistics.bk
-                print ("start state: ",state.get_state_facts())
-                time_elapsed = 0
-                start = clock()
-                trajectory = [(state.state_number,state.get_state_facts())]
-                while not state.goal():
-                    print ("="*80)
-                    state_action_pair = state.execute_random_action()
-                    state = state_action_pair[0]
-                    trajectory.append((state.state_number,state.get_state_facts()))
-                    end = clock()
-                    time_elapsed = abs(end-start)
-                    if time_elapsed > 0.5:
-                        break
-                if time_elapsed <= 0.5:
-                    self.compute_value_of_trajectory(values,trajectory,AVI=True)
-                    for key in values:
-                        facts += list(key[1])
-                        example_predicate = "value(s"+str(key[0])+") "+str(values[key])
-                        examples.append(example_predicate)
-                    j += 1
+                elif self.simulator == "pong":
+                    state = Pong(start=True)
+                    if not bk:
+                        bk = Pong.bk
+                with open(self.simulator+"_FVI_out.txt","a") as fp:
+                    fp.write("*"*80+"\nstart state: "+str(state.get_state_facts())+"\n")
+                    time_elapsed = 0
+                    within_time = True
+                    start = clock()
+                    trajectory = [(state.state_number,state.get_state_facts())]
+                    while not state.goal():
+                        fp.write("="*80+"\n")
+                        state_action_pair = state.execute_random_action()
+                        state = state_action_pair[0]
+                        fp.write(str(state.get_state_facts())+"\n")
+                        trajectory.append((state.state_number,state.get_state_facts()))
+                        end = clock()
+                        time_elapsed = abs(end-start)
+                        if self.simulator == "logistics" and time_elapsed > 0.5:
+                            within_time = False
+                            break
+                        elif self.simulator == "pong" and time_elapsed > 1000:
+                            within_time = False
+                            break
+                    if within_time:
+                        self.compute_value_of_trajectory(values,trajectory,AVI=True)
+                        for key in values:
+                            facts += list(key[1])
+                            example_predicate = "value(s"+str(key[0])+") "+str(values[key])
+                            examples.append(example_predicate)
+                        j += 1
             self.model.infer(facts,examples)
             fitted_values = self.model.infer(facts,examples)
             bellman_error = self.compute_bellman_error(values)
-            f.write("iteration: "+str(i)+" average bellman error: "+str(bellman_error)+"\n")
+            with open(self.simulator+"_BEs.txt","a") as f:
+                f.write("iteration: "+str(i)+" average bellman error: "+str(bellman_error)+"\n")
             examples = []
             for key in values:
                 example_predicate = "value(s"+str(key[0])+") "+str(values[key])
