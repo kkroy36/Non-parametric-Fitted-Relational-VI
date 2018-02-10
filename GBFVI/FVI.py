@@ -4,7 +4,7 @@ from GradientBoosting import GradientBoosting
 
 class FVI(object):
 
-    def __init__(self,transfer=1,simulator="logistics",batch_size=1,number_of_iterations=20):
+    def __init__(self,transfer=0,simulator="logistics",batch_size=1,number_of_iterations=20):
         self.transfer = transfer
         self.simulator = simulator
         self.batch_size = batch_size
