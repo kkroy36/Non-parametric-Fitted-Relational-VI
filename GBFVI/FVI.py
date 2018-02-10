@@ -52,7 +52,7 @@ class FVI(object):
             start = clock()
             trajectory = [(state.state_number,state.get_state_facts())]
             while not state.goal():
-                print "="*80
+                print ("="*80)
                 state_action_pair = state.execute_random_action()
                 state = state_action_pair[0] #state
                 trajectory.append((state.state_number,state.get_state_facts()))
@@ -100,7 +100,7 @@ class FVI(object):
                 start = clock()
                 trajectory = [(state.state_number,state.get_state_facts())]
                 while not state.goal():
-                    print "="*80
+                    print ("="*80)
                     state_action_pair = state.execute_random_action()
                     state = state_action_pair[0]
                     trajectory.append((state.state_number,state.get_state_facts()))

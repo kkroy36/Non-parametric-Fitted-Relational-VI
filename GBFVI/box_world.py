@@ -183,7 +183,7 @@ class Logistics(object): #represents a world state
             return False
         for city in self.cities:
             if city.get_number() == 3 and len(city.unloaded_boxes) > 0:
-                print city.unloaded_boxes
+                print (city.unloaded_boxes)
                 return True
         return False
 
