@@ -10,6 +10,7 @@ class FVI(object):
         self.batch_size = batch_size
         self.number_of_iterations = number_of_iterations
         self.model = None
+        self.compute_transfer_model()
         #self.facts,self.examples,self.bk = [],[],[] 
 
     def compute_value_of_trajectory(self,values,trajectory,discount_factor=0.9,goal_value=10,AVI=False): 
@@ -123,7 +124,3 @@ class FVI(object):
                 example_predicate = "value(s"+str(key[0])+") "+str(values[key])
                 examples.append(example_predicate)
             self.model.learn(facts,examples,bk)
-
-f = FVI()
-f.compute_transfer_model()
-            
