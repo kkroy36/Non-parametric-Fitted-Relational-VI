@@ -322,16 +322,16 @@ class Pong(object):
         new_state = self.execute_action(sampled_action)
         return (new_state,[random_action],actions_not_executed)
 
-    def factored(self,state):
+    def factored(self):
         '''returns all feature values of the state as a list'''
-        factored_state = [state.paddle1_pos_x]
-        factored_state += [state.paddle1_pos_y]
-        factored_state += [state.paddle2_pos_x]
-        factored_state += [state.paddle2_pos_y]
-        factored_state += [state.ball_pos_x]
-        factored_state += [state.ball_pos_y]
-        factored_state += [state.score]
-        factored_state += [state.opponent_score]
+        factored_state = [self.paddle1_pos_x]
+        factored_state += [self.paddle1_pos_y]
+        factored_state += [self.paddle2_pos_x]
+        factored_state += [self.paddle2_pos_y]
+        factored_state += [self.ball_pos_x]
+        factored_state += [self.ball_pos_y]
+        factored_state += [self.score]
+        factored_state += [self.opponent_score]
 	return factored_state
 
     def __repr__(self):

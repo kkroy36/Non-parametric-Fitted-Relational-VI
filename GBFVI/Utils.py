@@ -1,7 +1,7 @@
 import string
 import re
-from random import sample
 from math import exp
+from random import sample
 import random
 
 class Data(object):
@@ -187,16 +187,18 @@ class Utils(object):
         fp.close()
 
     @staticmethod
-    def setTrainingData(target=None,facts=None,examples=None,pos=None,neg=None,bk=None,regression=False):
+    def setTrainingData(target=None,facts=None,examples=None,pos=None,neg=None,bk=None,regression=False,sampling_rate=None):
         '''sets facts, examples and background'''
         Utils.data = Data()
         Utils.data.regression = regression
-        Utils.data.setFacts(facts)
+        sampled_facts = [fact for fact in facts if random.random() < sampling_rate]
+        sampled_examples = [example for example in examples if random.random() < sampling_rate]
+        Utils.data.setFacts(sampled_facts)
         if not regression:
             Utils.data.setPos(pos,target)
             Utils.data.setNeg(neg,target)
         elif regression:
-            Utils.data.setExamples(examples,target)
+            Utils.data.setExamples(sampled_examples,target)
         Utils.data.setBackground(bk)
         if not regression:
             Utils.data.setTarget(bk,target)

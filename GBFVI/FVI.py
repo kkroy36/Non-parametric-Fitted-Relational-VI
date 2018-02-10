@@ -1,11 +1,12 @@
 from box_world import Logistics
 #from pong import Pong #--> uncomment to run Pong
+#from tetris import Tetris #--> uncomment to run Tetris
 from time import clock
 from GradientBoosting import GradientBoosting
 
 class FVI(object):
 
-    def __init__(self,transfer=0,simulator="logistics",batch_size=1,number_of_iterations=10):
+    def __init__(self,transfer=0,simulator="logistics",batch_size=1,number_of_iterations=3):
         self.transfer = transfer
         self.simulator = simulator
         self.batch_size = batch_size
@@ -51,6 +52,10 @@ class FVI(object):
                 state = Pong(start=True)
                 if not bk:
                     bk = Pong.bk
+            elif self.simulator == "tetris":
+                state = Tetris(start=True)
+                if not bk:
+                    bk = Tetris.bk
             with open(self.simulator+"_transfer_out.txt","a") as f:
                 if self.transfer:
                     f.write("start state: "+str(state.get_state_facts())+"\n")
@@ -74,6 +79,8 @@ class FVI(object):
                     elif self.simulator == "pong" and time_elapsed > 1000:
                         within_time = False
                         break
+                    elif self.simulator == "tetris" and time_elapsed > 1000:
+                        within_time = False
                 if within_time:
                     self.compute_value_of_trajectory(values,trajectory)
                     for key in values:
@@ -81,7 +88,7 @@ class FVI(object):
                         example_predicate = "value(s"+str(key[0])+") "+str(values[key])
                         examples.append(example_predicate)
                     i += 1
-        reg = GradientBoosting(regression = True,treeDepth=2)
+        reg = GradientBoosting(regression = True,treeDepth=2,trees=10,sampling_rate=0.7)
         reg.setTargets(["value"])
         reg.learn(facts,examples,bk)
         self.model = reg
@@ -112,6 +119,10 @@ class FVI(object):
                     state = Pong(start=True)
                     if not bk:
                         bk = Pong.bk
+                elif self.simulator == "tetris":
+                    state = Tetris(start=True)
+                    if not bk:
+                        bk = Tetris.bk
                 with open(self.simulator+"_FVI_out.txt","a") as fp:
                     fp.write("*"*80+"\nstart state: "+str(state.get_state_facts())+"\n")
                     time_elapsed = 0
@@ -132,6 +143,8 @@ class FVI(object):
                         elif self.simulator == "pong" and time_elapsed > 1000:
                             within_time = False
                             break
+                        elif self.simulator == "tetris" and time_elapsed > 10:
+                            within_time = False
                     if within_time:
                         self.compute_value_of_trajectory(values,trajectory,AVI=True)
                         for key in values:

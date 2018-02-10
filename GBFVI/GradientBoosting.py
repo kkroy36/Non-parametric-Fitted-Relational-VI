@@ -8,9 +8,10 @@ from os import system
 
 class GradientBoosting(object):
 
-    def __init__(self,regression=False,trees=10,treeDepth=2,loss="LS"):
+    def __init__(self,regression=False,trees=10,treeDepth=2,loss="LS",sampling_rate=1.0):
         self.targets = None
         self.regression = regression
+        self.sampling_rate = sampling_rate
         self.numberOfTrees = trees
         self.treeDepth = treeDepth
         self.trees = {}
@@ -23,7 +24,7 @@ class GradientBoosting(object):
 
     def learn(self,facts,examples,bk):
         for target in self.targets:
-            data = Utils.setTrainingData(target=target,facts=facts,examples=examples,bk=bk,regression=self.regression)
+            data = Utils.setTrainingData(target=target,facts=facts,examples=examples,bk=bk,regression=self.regression,sampling_rate = self.sampling_rate)
             trees = []
             for i in range(self.numberOfTrees):
                 print ('='*20,"learning tree",str(i),'='*20)
