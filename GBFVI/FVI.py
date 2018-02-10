@@ -4,8 +4,8 @@ from GradientBoosting import GradientBoosting
 
 class FVI(object):
 
-    def __init__(self,transfer=0,simulator="logistics",batch_size=1,number_of_iterations=20):
-        self.burn_in_time = burn_in_time
+    def __init__(self,transfer=1,simulator="logistics",batch_size=1,number_of_iterations=20):
+        self.transfer = transfer
         self.simulator = simulator
         self.batch_size = batch_size
         self.number_of_iterations = number_of_iterations
@@ -41,7 +41,7 @@ class FVI(object):
         facts,examples,bk = [],[],[]
         i = 0
         values = {}
-        while i < self.burn_in_time+1:
+        while i < self.transfer+1:
             if self.simulator == "logistics":
                 state = Logistics(start=True)
                 if not bk:
