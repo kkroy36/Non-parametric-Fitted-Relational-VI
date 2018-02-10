@@ -53,9 +53,10 @@ class FVI(object):
                     examples.append(example_predicate)
                     #print (example_predicate)
                 i += 1
-        reg = GradientBoosting(regression = True,treeDepth=3,loss="LS")
+        reg = GradientBoosting(regression = True,treeDepth=3)
         reg.setTargets(["value"])
         reg.learn(facts,examples,bk)
+        reg.infer(facts,examples)
 
 f = FVI()
 f.compute_burn_in_values()

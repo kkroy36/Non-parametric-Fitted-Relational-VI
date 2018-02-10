@@ -121,4 +121,4 @@ class Boosting(object):
             for example in testData.examples:
                 sumOfGradients = Boosting.computeSumOfGradients(example,trees,testData)
                 testData.examples[example] = sumOfGradients
-        Boosting.computeResults(testData)
+        #Boosting.computeResults(testData)

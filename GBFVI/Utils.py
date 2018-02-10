@@ -308,6 +308,18 @@ class Utils(object):
         return Utils.data
 
     @staticmethod
+    def setTestData(target=None,facts=None,pos=None,neg=None,examples=None,regression=False):
+        testData = Data()
+        testData.regression = regression
+        testData.setFacts(facts)
+        if not regression:
+            testData.setPos(pos)
+            testData.setNeg(neg)
+        elif regression:
+            testData.setExamples(examples,target)
+        return testData
+
+    @staticmethod
     def readTestData(target,sampling_rate_test,regression = False):
         '''reads the testing data from files'''
         testData = Data() #create object to hold data
