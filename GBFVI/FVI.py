@@ -1,4 +1,5 @@
 from box_world import Logistics
+from wumpus import Wumpus
 #from pong import Pong #--> uncomment to run Pong
 #from tetris import Tetris #--> uncomment to run Tetris
 from time import clock
@@ -56,6 +57,10 @@ class FVI(object):
                 state = Tetris(start=True)
                 if not bk:
                     bk = Tetris.bk
+            elif self.simulator == "wumpus":
+                state = Wumpus(start=True)
+                if not bk:
+                    bk = Wumpus.bk
             with open(self.simulator+"_transfer_out.txt","a") as f:
                 if self.transfer:
                     f.write("start state: "+str(state.get_state_facts())+"\n")
@@ -123,6 +128,10 @@ class FVI(object):
                     state = Tetris(start=True)
                     if not bk:
                         bk = Tetris.bk
+                elif self.simulator == "wumpus":
+                    state = Wumpus(start=True)
+                    if not bk:
+                        bk = Wumpus.bk
                 with open(self.simulator+"_FVI_out.txt","a") as fp:
                     fp.write("*"*80+"\nstart state: "+str(state.get_state_facts())+"\n")
                     time_elapsed = 0
@@ -144,6 +153,8 @@ class FVI(object):
                             within_time = False
                             break
                         elif self.simulator == "tetris" and time_elapsed > 10:
+                            within_time = False
+                        elif self.simulator == "wumpus" and time_elapsed > 1:
                             within_time = False
                     if within_time:
                         self.compute_value_of_trajectory(values,trajectory,AVI=True)

@@ -6,7 +6,7 @@ from copy import deepcopy
 class City(object):
 
 
-    MAX_CITIES = 3
+    MAX_CITIES = 3 #3rd city destination
     after_addition_check = None
 
     def __init__(self,number):

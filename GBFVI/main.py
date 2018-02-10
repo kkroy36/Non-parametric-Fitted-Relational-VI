@@ -1,2 +1,2 @@
 from FVI import FVI
-FVI(simulator="tetris")
+FVI(simulator="wumpus")
