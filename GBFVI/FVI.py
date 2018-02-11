@@ -1,6 +1,7 @@
 from box_world import Logistics
 from wumpus import Wumpus
 from blocks import Blocks_world
+from blackjack import Game
 #from pong import Pong #--> uncomment to run Pong
 #from tetris import Tetris #--> uncomment to run Tetris
 from time import clock
@@ -67,6 +68,10 @@ class FVI(object):
                 state = Blocks_world(start=True)
                 if not bk:
                     bk = Blocks_world.bk
+            elif self.simulator == "blackjack":
+                state = Game(start=True)
+                if not bk:
+                    bk = Game.bk
             with open(self.simulator+"_transfer_out.txt","a") as f:
                 if self.transfer:
                     f.write("start state: "+str(state.get_state_facts())+"\n")
@@ -97,6 +102,9 @@ class FVI(object):
                         within_time = False
                         break
                     elif self.simulator == "blocks" and time_elapsed > 1:
+                        within_time = False
+                        break
+                    elif self.simulator == "blackjack" and time_elapsed > 1:
                         within_time = False
                         break
                 if within_time:
@@ -149,6 +157,10 @@ class FVI(object):
                     state = Blocks_world(start=True)
                     if not bk:
                         bk = Blocks_world.bk
+                elif self.simulator == "blackjack":
+                    state = Game(start=True)
+                    if not bk:
+                        bk = Game.bk
                 with open(self.simulator+"_FVI_out.txt","a") as fp:
                     fp.write("*"*80+"\nstart state: "+str(state.get_state_facts())+"\n")
                     time_elapsed = 0
@@ -176,6 +188,9 @@ class FVI(object):
                             within_time = False
                             break
                         elif self.simulator == "blocks" and time_elapsed > 1:
+                            within_time = False
+                            break
+                        elif self.simulator == "blackjack" and time_elapsed > 1:
                             within_time = False
                             break
                     if within_time:
