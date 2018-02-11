@@ -1,2 +1,2 @@
 from FVI import FVI
-FVI(simulator="blocks")
+FVI(simulator="blocks",transfer=1,loss="Huber")

@@ -8,10 +8,11 @@ from GradientBoosting import GradientBoosting
 
 class FVI(object):
 
-    def __init__(self,transfer=0,simulator="logistics",batch_size=1,number_of_iterations=3):
+    def __init__(self,transfer=0,simulator="logistics",batch_size=1,number_of_iterations=10,loss="LS"):
         self.transfer = transfer
         self.simulator = simulator
         self.batch_size = batch_size
+        self.loss = loss
         self.number_of_iterations = number_of_iterations
         self.model = None
         self.compute_transfer_model()
@@ -45,7 +46,7 @@ class FVI(object):
         facts,examples,bk = [],[],[]
         i = 0
         values = {}
-        while i < self.transfer+1: #at least one iteration burn in time
+        while i < self.transfer*5+1: #at least one iteration burn in time
             if self.simulator == "logistics":
                 state = Logistics(start=True)
                 if not bk:
@@ -105,7 +106,7 @@ class FVI(object):
                         example_predicate = "value(s"+str(key[0])+") "+str(values[key])
                         examples.append(example_predicate)
                     i += 1
-        reg = GradientBoosting(regression = True,treeDepth=2,trees=10,sampling_rate=0.7)
+        reg = GradientBoosting(regression = True,treeDepth=2,trees=10,sampling_rate=0.7,loss=self.loss)
         reg.setTargets(["value"])
         reg.learn(facts,examples,bk)
         self.model = reg
