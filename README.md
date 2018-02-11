@@ -4,6 +4,6 @@
 
 **pygame required to run pong and tetris**
 
-**For 50chain and blackjack, training batch sizes needs to be higher to avoid empty trajectories on occasion.**
+**For 50chain and blackjack, training batch sizes needs to be higher to avoid empty trajectories.**
 
 contact: kxr150330@utdallas.edu
