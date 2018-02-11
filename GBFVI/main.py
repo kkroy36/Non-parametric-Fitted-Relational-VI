@@ -10,4 +10,4 @@ from FVI import FVI
 #FVI(simulator="tetris") #tetris --> uncomment import stmts from FVI.py
 #FVI(simulator="wumpus") #wumpusworld
 #FVI(simulator="blackjack",transfer=1,batch_size=10,loss="LAD") #no facts in 1 trajectory => (batch_size=10)
-FVI(simulator="50chain",batch_size=2,trees=2) #for simple domains 10 trees not required
+#FVI(simulator="50chain",batch_size=2,trees=2) #for simple domains 10 trees not required
