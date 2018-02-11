@@ -115,7 +115,7 @@ class Blocks_world():
         probability_distribution_function = zip(random_actions,action_probabilities)
         sampled_action = self.sample(probability_distribution_function)
         new_state = self.execute_action(sampled_action)
-        return (new_state,[random_action],actions_not_executed)
+        return (new_state,[sampled_action],actions_not_executed)
 
 '''
 with open("blocks_world_out.txt","a") as f:

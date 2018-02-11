@@ -3,6 +3,7 @@ from wumpus import Wumpus
 from blocks import Blocks_world
 from blackjack import Game
 from chain import Chain
+from net_admin import Admin
 #from pong import Pong #--> uncomment to run Pong
 #from tetris import Tetris #--> uncomment to run Tetris
 from time import clock
@@ -78,6 +79,10 @@ class FVI(object):
                 state = Chain(start=True)
                 if not bk:
                     bk = Chain.bk
+            elif self.simulator == "net_admin":
+                state = Admin(start=True)
+                if not bk:
+                    bk = Admin.bk
             with open(self.simulator+"_transfer_out.txt","a") as f:
                 if self.transfer:
                     f.write("start state: "+str(state.get_state_facts())+"\n")
@@ -114,6 +119,9 @@ class FVI(object):
                         within_time = False
                         break
                     elif self.simulator == "50chain" and time_elapsed > 1:
+                        within_time = False
+                        break
+                    elif self.simulator == "net_admin" and time_elapsed > 1:
                         within_time = False
                         break
                 if within_time:
@@ -174,6 +182,10 @@ class FVI(object):
                     state = Chain(start=True)
                     if not bk:
                         bk = Chain.bk
+                elif self.simulator == "net_admin":
+                    state = Admin(start=True)
+                    if not bk:
+                        bk = Admin.bk
                 with open(self.simulator+"_FVI_out.txt","a") as fp:
                     fp.write("*"*80+"\nstart state: "+str(state.get_state_facts())+"\n")
                     time_elapsed = 0
@@ -209,6 +221,8 @@ class FVI(object):
                         elif self.simulator == "50chain" and time_elapsed > 1:
                             within_time = False
                             break
+                        elif self.simulator == "net_id" and time_elapsed > 1:
+                            within_time = False
                     if within_time:
                         self.compute_value_of_trajectory(values,trajectory,AVI=True)
                         for key in values:
@@ -216,7 +230,7 @@ class FVI(object):
                             example_predicate = "value(s"+str(key[0])+") "+str(values[key])
                             examples.append(example_predicate)
                         j += 1
-            self.model.infer(facts,examples)
+            #self.model.infer(facts,examples)
             fitted_values = self.model.infer(facts,examples)
             bellman_error = self.compute_bellman_error(values)
             with open(self.simulator+"_BEs.txt","a") as f:
