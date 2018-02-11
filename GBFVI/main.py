@@ -1,4 +1,8 @@
 from FVI import FVI
+'''loss can be LS,LAD or Huber
+   transfer can be 0 or 1
+   number_of_iterations can be set (default=10)
+'''
 #FVI() #logistics default
 #FVI(simulator="blocks",transfer=1,loss="Huber") #blocksworld
 #FVI(simulator="pong") #pong --> uncomment import statements from FVI.py
