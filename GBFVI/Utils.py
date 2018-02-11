@@ -61,7 +61,6 @@ class Data(object):
         for line in bk:
             if line.split('(')[0] == target:
                 targetSpecification = line
-				
         targetSpecification = targetSpecification[:-1].split('(')[1].split(',')
         firstPositiveInstance = None
         if not regression:

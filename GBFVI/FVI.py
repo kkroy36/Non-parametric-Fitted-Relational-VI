@@ -2,6 +2,7 @@ from box_world import Logistics
 from wumpus import Wumpus
 from blocks import Blocks_world
 from blackjack import Game
+from chain import Chain
 #from pong import Pong #--> uncomment to run Pong
 #from tetris import Tetris #--> uncomment to run Tetris
 from time import clock
@@ -9,11 +10,12 @@ from GradientBoosting import GradientBoosting
 
 class FVI(object):
 
-    def __init__(self,transfer=0,simulator="logistics",batch_size=1,number_of_iterations=10,loss="LS"):
+    def __init__(self,transfer=0,simulator="logistics",batch_size=1,number_of_iterations=10,loss="LS",trees=10):
         self.transfer = transfer
         self.simulator = simulator
         self.batch_size = batch_size
         self.loss = loss
+        self.trees = trees
         self.number_of_iterations = number_of_iterations
         self.model = None
         self.compute_transfer_model()
@@ -72,6 +74,10 @@ class FVI(object):
                 state = Game(start=True)
                 if not bk:
                     bk = Game.bk
+            elif self.simulator == "50chain":
+                state = Chain(start=True)
+                if not bk:
+                    bk = Chain.bk
             with open(self.simulator+"_transfer_out.txt","a") as f:
                 if self.transfer:
                     f.write("start state: "+str(state.get_state_facts())+"\n")
@@ -107,6 +113,9 @@ class FVI(object):
                     elif self.simulator == "blackjack" and time_elapsed > 1:
                         within_time = False
                         break
+                    elif self.simulator == "50chain" and time_elapsed > 1:
+                        within_time = False
+                        break
                 if within_time:
                     self.compute_value_of_trajectory(values,trajectory)
                     for key in values:
@@ -114,7 +123,7 @@ class FVI(object):
                         example_predicate = "value(s"+str(key[0])+") "+str(values[key])
                         examples.append(example_predicate)
                     i += 1
-        reg = GradientBoosting(regression = True,treeDepth=2,trees=10,sampling_rate=0.7,loss=self.loss)
+        reg = GradientBoosting(regression = True,treeDepth=2,trees=self.trees,sampling_rate=0.7,loss=self.loss)
         reg.setTargets(["value"])
         reg.learn(facts,examples,bk)
         self.model = reg
@@ -161,6 +170,10 @@ class FVI(object):
                     state = Game(start=True)
                     if not bk:
                         bk = Game.bk
+                elif self.simulator == "50chain":
+                    state = Chain(start=True)
+                    if not bk:
+                        bk = Chain.bk
                 with open(self.simulator+"_FVI_out.txt","a") as fp:
                     fp.write("*"*80+"\nstart state: "+str(state.get_state_facts())+"\n")
                     time_elapsed = 0
@@ -191,6 +204,9 @@ class FVI(object):
                             within_time = False
                             break
                         elif self.simulator == "blackjack" and time_elapsed > 1:
+                            within_time = False
+                            break
+                        elif self.simulator == "50chain" and time_elapsed > 1:
                             within_time = False
                             break
                     if within_time:
