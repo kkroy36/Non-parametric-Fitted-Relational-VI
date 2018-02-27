@@ -12,6 +12,10 @@ from GradientBoosting import GradientBoosting
 class FVI(object):
 
     def __init__(self,transfer=0,simulator="logistics",batch_size=1,number_of_iterations=10,loss="LS",trees=10):
+	'''transfer = 1, means a prespecified number of iterations are run and learning
+	   the regression model using RFGB, (relational model) before starting fitted
+           value iteration with the learned values
+	'''
         self.transfer = transfer
         self.simulator = simulator
         self.batch_size = batch_size
@@ -21,7 +25,16 @@ class FVI(object):
         self.model = None
         self.compute_transfer_model()
 
-    def compute_value_of_trajectory(self,values,trajectory,discount_factor=0.9,goal_value=1,AVI=False): 
+    def compute_value_of_trajectory(self,values,trajectory,discount_factor=0.9,goal_value=1,AVI=False):
+	'''computes the value of a trajectory
+           if trajectory from AVI=True, then gather next state value from prediciton
+           else gather it from the discounted number of steps from the goal times the goal reward
+           there is only one trajectory, therefore, R + gamma*expected(next_state_value) becomes
+           R + gamma*next_state_value
+	   hence this was carried out as shown in the code
+           reason for not averaging (expected value) is because everytime the objects are different
+           Hence, it may appear to be a TD update, but it is not.
+	''' 
         reversed_trajectory = trajectory[::-1]
         number_of_transitions = len(reversed_trajectory)
         if not AVI:
@@ -47,6 +60,14 @@ class FVI(object):
                 
             
     def compute_transfer_model(self):
+	'''computes the transfer model if transfer=1
+           therefore it computes transfer model over 6 iterations
+           if set to 1, which can be changed in the code
+	   otherwise, it uses at least one trajectory to compute the initial model
+           before starting fitted value iteration.
+	   Note that in the transfer start state, parameters to allow different grid sizes,
+	   lets say for wumpus world can be set during object call if allowable by the constructor.
+	'''
         facts,examples,bk = [],[],[]
         i = 0
         values = {}
