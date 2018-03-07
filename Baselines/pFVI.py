@@ -1,7 +1,7 @@
-#from blackjack import Game
+from blackjack import Game
 from chain import Chain
 #from pong import Pong #--> uncomment to run Pong
-from tetris import Tetris #--> uncomment to run Tetris
+#from tetris import Tetris #--> uncomment to run Tetris
 from time import clock
 from sklearn.neural_network import MLPRegressor
 import numpy as np
@@ -140,7 +140,9 @@ class FVI(object):
                     i += 1
         npX = np.array(X)
         npY = np.array(Y)
-        print (npX,npY)
+	if not self.transfer:
+		npY = np.zeros(len(npY))
+        #print (npX,npY)
         model = MLPRegressor(hidden_layer_sizes=(25, ),
                              activation="logistic",
                              solver="lbfgs",
@@ -255,7 +257,10 @@ class FVI(object):
                         elif self.simulator == "net_id" and time_elapsed > 1:
                             within_time = False
                     if within_time:
-                        self.compute_value_of_trajectory(values,trajectory,AVI=True)
+			if i > 0:
+                            self.compute_value_of_trajectory(values,trajectory,AVI=True)
+                        else:
+                            self.compute_value_of_trajectory(values,trajectory,AVI=False)
 			self.state_number += 1
                         for key in values:
                             state = list(key[1])
