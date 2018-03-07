@@ -350,7 +350,7 @@ class Tetris(object):
         bk = ["shape_count(+state,+shape,[high;low])",
               "value(state)"]
         
-        def __init__(self,state_number = 1,start=False):
+        def __init__(self,number = 1,start=False):
                 '''class constructor'''
                 if start:
                     self.nstones = 0

@@ -17,9 +17,10 @@ class FVI(object):
         self.trees = trees
         self.number_of_iterations = number_of_iterations
         self.model = None
+	self.state_number = 1
         self.compute_transfer_model()
 
-    def compute_value_of_trajectory(self,values,trajectory,discount_factor=0.9,goal_value=1,AVI=False): 
+    def compute_value_of_trajectory(self,values,trajectory,discount_factor=0.9,goal_value=100,AVI=False): 
         reversed_trajectory = trajectory[::-1]
         number_of_transitions = len(reversed_trajectory)
         if not AVI:
@@ -48,37 +49,37 @@ class FVI(object):
         X,Y,bk = [],[],[]
         i = 0
         values = {}
-        while i < self.transfer*5+5: #at least one iteration burn in time
+        while i < self.transfer*5+1: #at least one iteration burn in time
             if self.simulator == "logistics":
-                state = Logistics(start=True)
+                state = Logistics(number = self.state_number,start=True)
                 if not bk:
                     bk = Logistics.bk
             elif self.simulator == "pong":
-                state = Pong(start=True)
+                state = Pong(number = self.state_number,start=True)
                 if not bk:
                     bk = Pong.bk
             elif self.simulator == "tetris":
-                state = Tetris(start=True)
+                state = Tetris(number = self.state_number,start=True)
                 if not bk:
                     bk = Tetris.bk
             elif self.simulator == "wumpus":
-                state = Wumpus(start=True)
+                state = Wumpus(number = self.state_number,start=True)
                 if not bk:
                     bk = Wumpus.bk
             elif self.simulator == "blocks":
-                state = Blocks_world(start=True)
+                state = Blocks_world(number = self.state_number,start=True)
                 if not bk:
                     bk = Blocks_world.bk
             elif self.simulator == "blackjack":
-                state = Game(start=True)
+                state = Game(number = self.state_number,start=True)
                 if not bk:
                     bk = Game.bk
             elif self.simulator == "50chain":
-                state = Chain(start=True)
+                state = Chain(number = self.state_number,start=True)
                 if not bk:
                     bk = Chain.bk
             elif self.simulator == "net_admin":
-                state = Admin(start=True)
+                state = Admin(number = self.state_number,start=True)
                 if not bk:
                     bk = Admin.bk
             with open(self.simulator+"_transfer_out.txt","a") as f:
@@ -124,6 +125,7 @@ class FVI(object):
                         break
                 if within_time:
                     self.compute_value_of_trajectory(values,trajectory)
+		    self.state_number += len(trajectory)+1
                     for key in values:
                         state = list(key[1])
                         value = values[key]
@@ -139,7 +141,7 @@ class FVI(object):
         npX = np.array(X)
         npY = np.array(Y)
         print (npX,npY)
-        model = MLPRegressor(solver="lbfgs",
+        model = MLPRegressor(solver="sgd",
                              activation="logistic",
                              alpha=1e-5,
                              hidden_layer_sizes=(25,2),
@@ -168,35 +170,35 @@ class FVI(object):
             fitted_values = {}
             while j < self.batch_size:
                 if self.simulator == "logistics":
-                    state = Logistics(start=True)
+                    state = Logistics(number = self.state_number,start=True)
                     if not bk:
                         bk = Logistics.bk
                 elif self.simulator == "pong":
-                    state = Pong(start=True)
+                    state = Pong(number = self.state_number,start=True)
                     if not bk:
                         bk = Pong.bk
                 elif self.simulator == "tetris":
-                    state = Tetris(start=True)
+                    state = Tetris(number = self.state_number,start=True)
                     if not bk:
                         bk = Tetris.bk
                 elif self.simulator == "wumpus":
-                    state = Wumpus(start=True)
+                    state = Wumpus(number = self.state_number,start=True)
                     if not bk:
                         bk = Wumpus.bk
                 elif self.simulator == "blocks":
-                    state = Blocks_world(start=True)
+                    state = Blocks_world(number = self.state_number,start=True)
                     if not bk:
                         bk = Blocks_world.bk
                 elif self.simulator == "blackjack":
-                    state = Game(start=True)
+                    state = Game(number = self.state_number,start=True)
                     if not bk:
                         bk = Game.bk
                 elif self.simulator == "50chain":
-                    state = Chain(start=True)
+                    state = Chain(number = self.state_number,start=True)
                     if not bk:
                         bk = Chain.bk
                 elif self.simulator == "net_admin":
-                    state = Admin(start=True)
+                    state = Admin(number = self.state_number,start=True)
                     if not bk:
                         bk = Admin.bk
                 with open(self.simulator+"_FVI_out.txt","a") as fp:
@@ -238,6 +240,7 @@ class FVI(object):
                             within_time = False
                     if within_time:
                         self.compute_value_of_trajectory(values,trajectory,AVI=True)
+			self.state_number += 1
                         for key in values:
                             state = list(key[1])
                             value = values[key]

@@ -26,7 +26,7 @@ class FVI(object):
 	self.state_number = 1
         self.compute_transfer_model()
 
-    def compute_value_of_trajectory(self,values,trajectory,discount_factor=0.9,goal_value=100,AVI=False):
+    def compute_value_of_trajectory(self,values,trajectory,discount_factor=0.9,goal_value=1.0,AVI=False):
 	'''computes the value of a trajectory
            if trajectory from AVI=True, then gather next state value from prediciton
            else gather it from the discounted number of steps from the goal times the goal reward

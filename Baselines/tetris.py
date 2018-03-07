@@ -350,11 +350,11 @@ class Tetris(object):
         bk = ["shape_count(+state,+shape,[high;low])",
               "value(state)"]
         
-        def __init__(self,state_number = 1,start=False):
+        def __init__(self,number = 1,start=False):
                 '''class constructor'''
                 if start:
                     self.nstones = 0
-                    self.state_number = 1
+                    self.state_number = number
                     self.goal_state = False
                     self.shape_counts = [0 for i in range(7)]
                     self.run = TetrisApp()
@@ -433,12 +433,15 @@ class Tetris(object):
 
 	def get_state_facts(self):
             facts = []
+            facts = [self.nstones]+self.shape_counts
+	    '''
             N = len(self.shape_counts)
             for i in range(N):
                 if self.shape_counts[i] > 2:
                     facts = [2]
                 elif self.shape_counts[i] <=2:
                     facts = [1]
+            '''
             return facts
 
         def sample(self,pdf):
