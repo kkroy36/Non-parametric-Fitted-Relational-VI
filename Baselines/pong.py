@@ -284,6 +284,7 @@ class Pong(object):
         return self
 
     def get_state_facts(self):
+	'''
         facts = [0,0,0,0]
         if self.p1_hit:
             facts[0] = 1
@@ -301,7 +302,16 @@ class Pong(object):
                 facts[3] = 1
             elif self.p2_close:
                 facts[2] = 1
-        return facts
+	'''
+        factored_state = [self.paddle1_pos_x]
+        factored_state += [self.paddle1_pos_y]
+        factored_state += [self.paddle2_pos_x]
+        factored_state += [self.paddle2_pos_y]
+        factored_state += [self.ball_pos_x]
+        factored_state += [self.ball_pos_y]
+        factored_state += [self.score]
+        factored_state += [self.opponent_score]
+        return factored_state
 
     def sample(self,pdf):
         cdf = [(i, sum(p for j,p in pdf if j < i)) for i,_ in pdf]

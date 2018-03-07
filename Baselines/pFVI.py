@@ -1,4 +1,4 @@
-from blackjack import Game
+#from blackjack import Game
 from chain import Chain
 #from pong import Pong #--> uncomment to run Pong
 from tetris import Tetris #--> uncomment to run Tetris
@@ -20,7 +20,7 @@ class FVI(object):
 	self.state_number = 1
         self.compute_transfer_model()
 
-    def compute_value_of_trajectory(self,values,trajectory,discount_factor=0.9,goal_value=100,AVI=False): 
+    def compute_value_of_trajectory(self,values,trajectory,discount_factor=0.9,goal_value=1,AVI=False): 
         reversed_trajectory = trajectory[::-1]
         number_of_transitions = len(reversed_trajectory)
         if not AVI:
@@ -141,11 +141,27 @@ class FVI(object):
         npX = np.array(X)
         npY = np.array(Y)
         print (npX,npY)
-        model = MLPRegressor(solver="sgd",
+        model = MLPRegressor(hidden_layer_sizes=(25, ),
                              activation="logistic",
-                             alpha=1e-5,
-                             hidden_layer_sizes=(25,2),
-                             random_state=1)
+                             solver="lbfgs",
+                             alpha=0.0001,
+                             batch_size="auto",
+                             learning_rate="constant",
+                             learning_rate_init=0.001,
+                             power_t=0.5,
+                             max_iter=200,
+                             shuffle=True,
+                             random_state=None,
+                             tol=0.0001,
+                             verbose=False,
+                             warm_start=False,
+                             momentum=0.9,
+                             nesterovs_momentum=True,
+                             early_stopping=False,
+                             validation_fraction=0.1,
+                             beta_1=0.9,
+                             beta_2=0.999,
+                             epsilon=1e-08)
         model.fit(npX,npY)
         #reg = GradientBoosting(regression = True,treeDepth=2,trees=self.trees,sampling_rate=0.7,loss=self.loss)
         #reg.setTargets(["value"])

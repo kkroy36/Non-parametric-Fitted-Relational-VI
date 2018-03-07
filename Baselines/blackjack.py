@@ -59,6 +59,7 @@ class Game(object):
 
     def get_state_facts(self):
         facts = []
+	'''
         if int(self.hand[0]) in range(1,12):
             facts += [1]            
         elif int(self.hand[0]) in range(12,17):
@@ -73,7 +74,8 @@ class Game(object):
             facts += [2]
         elif int(self.hand[1]) in range(8,12):
             facts += [3]
-        return facts
+	'''
+        return [float(item) for item in list(self.hand)]
 
     def sample(self,pdf):
         cdf = [(i, sum(p for j,p in pdf if j < i)) for i,_ in pdf]
