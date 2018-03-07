@@ -5,7 +5,7 @@ from FVI import FVI
    number_of_iterations can be set (default=10)
 '''
 #FVI() #logistics default
-#FVI(simulator="blocks",transfer=1,loss="Huber") #blocksworld
+FVI(simulator="blocks",trees=1) #blocksworld
 #FVI(simulator="pong") #pong --> uncomment import statements from FVI.py
 #FVI(simulator="tetris") #tetris --> uncomment import stmts from FVI.py
 #FVI(simulator="wumpus") #wumpusworld
