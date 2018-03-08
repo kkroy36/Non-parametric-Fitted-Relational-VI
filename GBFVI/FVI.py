@@ -5,7 +5,7 @@ from blackjack import Game
 from chain import Chain
 from net_admin import Admin
 #from pong import Pong #--> uncomment to run Pong
-from tetris import Tetris #--> uncomment to run Tetris
+#from tetris import Tetris #--> uncomment to run Tetris
 from time import clock
 from GradientBoosting import GradientBoosting
 
@@ -72,7 +72,7 @@ class FVI(object):
         facts,examples,bk = [],[],[]
         i = 0
         values = {}
-        while i < self.transfer*5+1: #at least one iteration burn in time
+        while i < 1: #at least one iteration burn in time
             if self.simulator == "logistics":
                 state = Logistics(number=self.state_number,start=True)
                 if not bk:
@@ -159,6 +159,8 @@ class FVI(object):
         reg.learn(facts,examples,bk)
         self.model = reg
         self.AVI()
+	if self.transfer:
+	    self.AVI()
 
     def compute_bellman_error(self,values):
         bellman_error = []

@@ -49,7 +49,7 @@ class FVI(object):
         X,Y,bk = [],[],[]
         i = 0
         values = {}
-        while i < self.transfer*5+1: #at least one iteration burn in time
+        while i < self.transfer: #at least one iteration burn in time
             if self.simulator == "logistics":
                 state = Logistics(number = self.state_number,start=True)
                 if not bk:
