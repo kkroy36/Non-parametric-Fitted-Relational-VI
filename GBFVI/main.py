@@ -6,7 +6,7 @@ from FVI import FVI
 '''
 #FVI(simulator="logistics",trees=1,loss="Huber",number_of_iterations=20) #logistics default
 #FVI(simulator="blocks",trees=1,loss="Huber",number_of_iterations=20) #blocksworld
-FVI(simulator="pong",trees=5,loss="Huber",number_of_iterations=2) #pong --> uncomment import statements from FVI.py
+FVI(simulator="pong",batch_size=2,trees=1,loss="Huber",number_of_iterations=20) #pong --> uncomment import statements from FVI.py
 #FVI(simulator="tetris") #tetris --> uncomment import stmts from FVI.py
 #FVI(simulator="wumpus",trees=1,loss="Huber",number_of_iterations=20) #wumpusworld
 #FVI(simulator="blackjack",trees=1,batch_size=10,loss="Huber",number_of_iterations=20) #no facts in 1 trajectory => (batch_size=10)
