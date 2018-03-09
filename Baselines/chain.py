@@ -77,7 +77,7 @@ class Chain(object):
                 facts.append(2)
             elif potential < 0.01:
                 facts.append(1)
-        return facts
+	return facts
 
     def sample(self,pdf):
         cdf = [(i, sum(p for j,p in pdf if j < i)) for i,_ in pdf]

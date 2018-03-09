@@ -1,6 +1,6 @@
 from blackjack import Game
-from chain import Chain
-#from pong import Pong #--> uncomment to run Pong
+from Chain import Chain
+from pong import Pong #--> uncomment to run Pong
 #from tetris import Tetris #--> uncomment to run Tetris
 from time import clock
 from sklearn.neural_network import MLPRegressor
@@ -49,7 +49,7 @@ class FVI(object):
         X,Y,bk = [],[],[]
         i = 0
         values = {}
-        while i < self.transfer: #at least one iteration burn in time
+        while i < self.transfer+1: #at least one iteration burn in time
             if self.simulator == "logistics":
                 state = Logistics(number = self.state_number,start=True)
                 if not bk:
@@ -117,7 +117,7 @@ class FVI(object):
                     elif self.simulator == "blackjack" and time_elapsed > 1:
                         within_time = False
                         break
-                    elif self.simulator == "50chain" and time_elapsed > 1:
+                    elif self.simulator == "50chain" and time_elapsed > 2:
                         within_time = False
                         break
                     elif self.simulator == "net_admin" and time_elapsed > 1:
@@ -142,8 +142,7 @@ class FVI(object):
         npY = np.array(Y)
 	if not self.transfer:
 		npY = np.zeros(len(npY))
-        #print (npX,npY)
-        model = MLPRegressor(hidden_layer_sizes=(25, ),
+        model = MLPRegressor(hidden_layer_sizes=(25,),
                              activation="logistic",
                              solver="lbfgs",
                              alpha=0.0001,
@@ -164,7 +163,8 @@ class FVI(object):
                              beta_1=0.9,
                              beta_2=0.999,
                              epsilon=1e-08)
-        model.fit(npX,npY)
+        print (npX)
+	model.fit(npX,npY)
         #reg = GradientBoosting(regression = True,treeDepth=2,trees=self.trees,sampling_rate=0.7,loss=self.loss)
         #reg.setTargets(["value"])
         #reg.learn(facts,examples,bk)
