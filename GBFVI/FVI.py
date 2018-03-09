@@ -4,8 +4,8 @@ from blocks import Blocks_world
 from blackjack import Game
 from chain import Chain
 from net_admin import Admin
-from pong import Pong #--> uncomment to run Pong
-#from tetris import Tetris #--> uncomment to run Tetris
+#from pong import Pong #--> uncomment to run Pong
+from tetris import Tetris #--> uncomment to run Tetris
 from time import clock
 from GradientBoosting import GradientBoosting
 
