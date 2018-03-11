@@ -3,7 +3,6 @@ from wumpus import Wumpus
 from blocks import Blocks_world
 from blackjack import Game
 from chain import Chain
-from copy import deepcopy
 from net_admin import Admin
 #from pong import Pong #--> uncomment to run Pong
 from tetris import Tetris #--> uncomment to run Tetris
@@ -25,7 +24,6 @@ class FVI(object):
         self.number_of_iterations = number_of_iterations
         self.model = None
 	self.state_number = 1
-	self.transfer_model = None
         self.compute_transfer_model()
 
     def compute_value_of_trajectory(self,values,trajectory,discount_factor=0.97,goal_value=10,AVI=False):
@@ -162,7 +160,6 @@ class FVI(object):
         self.model = reg
         self.AVI()
 	if self.transfer:
-            self.model = self.transfer_model
 	    self.AVI()
 
     def compute_bellman_error(self,values):
@@ -271,5 +268,3 @@ class FVI(object):
                 example_predicate = "value(s"+str(key[0])+") "+str(values[key])
                 examples.append(example_predicate)
             self.model.learn(facts,examples,bk)
-            if i == 0 and self.transfer:
-                self.transfer_model = deepcopy(self.model)
