@@ -72,7 +72,7 @@ class FVI(object):
         facts,examples,bk = [],[],[]
         i = 0
         values = {}
-        while i < 2: #at least one iteration burn in time
+        while i < 1: #at least one iteration burn in time
             if self.simulator == "logistics":
                 state = Logistics(number=self.state_number,start=True)
                 if not bk:

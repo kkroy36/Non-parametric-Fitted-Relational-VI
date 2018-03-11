@@ -88,7 +88,7 @@ class Truck(object):
 
     def __init__(self,number,city):
         self.boxes = []
-        self.MAX_BOXES = 5
+        self.MAX_BOXES = 10
         self.location = city #every truck starts at source city
         self.truck_number = number
 
@@ -167,7 +167,7 @@ class Logistics(object): #represents a world state
                 combinations.append("unload(s"+str(self.state_number)+","+str(box)+","+str(truck)+").")
         return combinations
 
-    def __init__(self,number=1,start=False):
+    def __init__(self,number=1,start=False,):
         self.MAX_TRUCKS = 3
         self.state_number = number
         self.cities = None
@@ -195,7 +195,7 @@ class Logistics(object): #represents a world state
 
     def init_trucks(self,number_of_trucks=False):
         if not number_of_trucks:
-            number_of_trucks = randint(1,self.MAX_TRUCKS)
+            number_of_trucks = self.MAX_TRUCKS #randint(1,self.MAX_TRUCKS)
         for i in range(number_of_trucks):
             truck = Truck(i+1,self.cities[0])
             trucks = []
