@@ -52,3 +52,4 @@ plt.ylabel("average of the bellman error")
 plt.title(domain)
 plt.legend(prop={'size': 20})
 plt.show()
+
