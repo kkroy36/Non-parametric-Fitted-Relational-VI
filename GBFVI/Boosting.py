@@ -47,7 +47,7 @@ class Boosting(object):
         return sumOfGradients #return the sum
 
     @staticmethod
-    def updateGradients(data,trees,loss="LS",delta=5):
+    def updateGradients(data,trees,loss="LS",delta=1.3):
         '''updates the gradients of the data'''
         if not data.regression:
             logPrior = Boosting.logPrior
@@ -86,7 +86,7 @@ class Boosting(object):
                     gradient = trueValue - exampleValue
                     updatedGradient = 0
                     if gradient:
-                        if gradient > float(delta):
+                        if abs(gradient) > float(delta):
                             updatedGradient = gradient/float(abs(gradient))
                         elif gradient <= float(delta):
                             updatedGradient = gradient
