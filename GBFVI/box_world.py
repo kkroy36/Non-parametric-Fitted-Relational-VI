@@ -310,6 +310,7 @@ class Logistics(object): #represents a world state
             random_action = choice(self.all_actions)
             random_actions.append(random_action)
             action_potentials.append(randint(1,9))
+	action_potentials = [1 for i in range(N)]
         action_probabilities = [potential/float(sum(action_potentials)) for potential in action_potentials]
         actions_not_executed = [action for action in self.all_actions if action != random_action]
         probability_distribution_function = zip(random_actions,action_probabilities)

@@ -3,6 +3,7 @@ from wumpus import Wumpus
 from blocks import Blocks_world
 from blackjack import Game
 from chain import Chain
+from copy import deepcopy
 from net_admin import Admin
 #from pong import Pong #--> uncomment to run Pong
 from tetris import Tetris #--> uncomment to run Tetris
@@ -24,9 +25,10 @@ class FVI(object):
         self.number_of_iterations = number_of_iterations
         self.model = None
 	self.state_number = 1
+	self.transfer_model = None
         self.compute_transfer_model()
 
-    def compute_value_of_trajectory(self,values,trajectory,discount_factor=0.9,goal_value=1.0,AVI=False):
+    def compute_value_of_trajectory(self,values,trajectory,discount_factor=0.97,goal_value=10,AVI=False):
 	'''computes the value of a trajectory
            if trajectory from AVI=True, then gather next state value from prediciton
            else gather it from the discounted number of steps from the goal times the goal reward
@@ -72,7 +74,7 @@ class FVI(object):
         facts,examples,bk = [],[],[]
         i = 0
         values = {}
-        while i < 1: #at least one iteration burn in time
+        while i < 2: #at least one iteration burn in time
             if self.simulator == "logistics":
                 state = Logistics(number=self.state_number,start=True)
                 if not bk:
@@ -154,24 +156,27 @@ class FVI(object):
                         example_predicate = "value(s"+str(key[0])+") "+str(values[key])
                         examples.append(example_predicate)
                     i += 1
-        reg = GradientBoosting(regression = True,treeDepth=2,trees=self.trees,sampling_rate=0.7,loss=self.loss)
+        reg = GradientBoosting(regression = True,treeDepth=2,trees=self.trees,loss=self.loss)
         reg.setTargets(["value"])
         reg.learn(facts,examples,bk)
         self.model = reg
         self.AVI()
 	if self.transfer:
+            self.model = self.transfer_model
 	    self.AVI()
 
     def compute_bellman_error(self,values):
-        bellman_error = []
+        bellman_errors = []
         inferred_values = self.model.testExamples["value"]
         for key in values:
             predicate = "value(s"+str(key[0])+")"
             inferred_value = inferred_values[predicate]
             computed_value = values[key]
-            bellman_error.append(abs(inferred_value-computed_value))
-            values[key] += computed_value-inferred_value
-        return sum(bellman_error)/float(len(bellman_error)) #average bellman error
+            bellman_error = computed_value - inferred_value 
+            bellman_errors.append(abs(bellman_error))
+            values[key] = inferred_value + bellman_error
+        #return max(bellman_errors)
+        return sum(bellman_errors)/float(len(bellman_errors)) #average bellman error
 
     def AVI(self):
         for i in range(self.number_of_iterations):
@@ -249,7 +254,7 @@ class FVI(object):
                         elif self.simulator == "net_id" and time_elapsed > 1:
                             within_time = False
                     if within_time:
-                        self.compute_value_of_trajectory(values,trajectory,AVI=True)
+                        self.compute_value_of_trajectory(values,trajectory)
 			self.state_number += 1
                         for key in values:
                             facts += list(key[1])
@@ -266,3 +271,5 @@ class FVI(object):
                 example_predicate = "value(s"+str(key[0])+") "+str(values[key])
                 examples.append(example_predicate)
             self.model.learn(facts,examples,bk)
+            if i == 0 and self.transfer:
+                self.transfer_model = deepcopy(self.model)
