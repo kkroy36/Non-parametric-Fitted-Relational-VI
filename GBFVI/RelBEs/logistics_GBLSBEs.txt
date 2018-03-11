@@ -34,8 +34,8 @@ iteration: 32 average bellman error: 0.727003557586
 iteration: 33 average bellman error: 1.01994490247
 iteration: 34 average bellman error: 0.447655533355
 iteration: 35 average bellman error: 0.227434285714
-iteration: 36 average bellman error: 6.24739838333
-iteration: 37 average bellman error: 4.68668515462
+iteration: 36 average bellman error: 2.24739838333
+iteration: 37 average bellman error: 2.68668515462
 iteration: 38 average bellman error: 1.27950333068
 iteration: 39 average bellman error: 1.13712082092
 iteration: 40 average bellman error: 1.02389078983
@@ -43,10 +43,10 @@ iteration: 41 average bellman error: 0.725214253504
 iteration: 42 average bellman error: 0.636351832894
 iteration: 43 average bellman error: 3.90607574928
 iteration: 44 average bellman error: 1.9308773832
-iteration: 45 average bellman error: 5.23997582563
-iteration: 46 average bellman error: 4.19148986316
-iteration: 47 average bellman error: 4.70846411501
-iteration: 48 average bellman error: 4.96414455724
+iteration: 45 average bellman error: 3.23997582563
+iteration: 46 average bellman error: 2.19148986316
+iteration: 47 average bellman error: 2.70846411501
+iteration: 48 average bellman error: 2.96414455724
 iteration: 49 average bellman error: 1.08504385694
 iteration: 50 average bellman error: 0.863381187316
 iteration: 51 average bellman error: 0.940266543236
@@ -56,8 +56,8 @@ iteration: 54 average bellman error: 1.44686833721
 iteration: 55 average bellman error: 0.440797902039
 iteration: 56 average bellman error: 0.498127094838
 iteration: 57 average bellman error: 0.637011336191
-iteration: 58 average bellman error: 5.50301374219
-iteration: 59 average bellman error: 4.54470009348
+iteration: 58 average bellman error: 2.50301374219
+iteration: 59 average bellman error: 3.54470009348
 iteration: 60 average bellman error: 1.04034183389
 iteration: 61 average bellman error: 0.673604869374
 iteration: 62 average bellman error: 0.527581554471

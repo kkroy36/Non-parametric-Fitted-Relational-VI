@@ -16,7 +16,7 @@ class Tower():
 
     def __init__(self,number):
         self.tower_number = number
-        self.block_stack = [Block(self.tower_number+str(i)) for i in range(random.randint(3,5))]
+        self.block_stack = [Block(self.tower_number+str(i)) for i in range(random.randint(1,3))]
         top_block = Block(self.tower_number+str(len(self.block_stack)+1))
         top_block.set_clear()
         self.block_stack.append(top_block)
@@ -41,7 +41,7 @@ class Tower():
         return False
 
     def too_high(self):
-        if len(self.block_stack) >= 3:
+        if len(self.block_stack) > 1:
             return True
         return False
 
@@ -53,7 +53,7 @@ class Tower():
     
 class Blocks_world():
 
-    bk = ["high_tower(+state,+tower)",
+    bk = ["on(+state,+block,-block)",
           "value(state)"]
 
     def __init__(self,number=1,start=False):
@@ -92,8 +92,10 @@ class Blocks_world():
     def get_state_facts(self):
         facts = []
         for tower in self.towers:
-            if tower.too_high():
-                facts.append("high_tower(s"+str(self.state_number)+",t"+tower.tower_number+")")
+            blocks = tower.get_blocks()
+            n_blocks = len(blocks)
+            for i in range(n_blocks-1):
+                facts.append("on(s"+str(self.state_number)+",b"+blocks[i].block_number+",b"+blocks[i+1].block_number+")")
         return facts
 
     def sample(self,pdf):
