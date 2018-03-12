@@ -18,9 +18,11 @@ gbls,gbhuber,gblad,nn,ls,rrt,wtr,wotr = [],[],[],[],[],[],[],[]
 with open(domain+"_GBLSBEs.txt") as f:
     gbls = f.read().splitlines()
     gbls = [item.split(":")[2] for item in gbls]
+
 with open(domain+"_GBLADBEs.txt") as f:
     gblad = f.read().splitlines()
     gblad = [item.split(":")[2] for item in gblad]
+    
 with open(domain+"_GBHuberBEs.txt") as f:
     gbhuber = f.read().splitlines()
     gbhuber = [item.split(":")[2] for item in gbhuber]
@@ -50,8 +52,8 @@ print (sum([int(float(x)>3) for x in gblad]))
 '''
 #print (sum([int(float(x)>5) for x in wotr]))
 #print (sum([int(float(x)>5) for x in wtr]))
-plt.ylim(ymin=-10,ymax=10)
-#plt.plot(range(100),difference(rrt,gbhuber),label="LS",color='blue',linewidth=3)
+plt.ylim(ymin=0,ymax=8)
+#plt.plot(range(100),difference(rrt,gbhuber),label="RRT",color='blue',linewidth=3)
 #plt.plot(range(100),difference(gbls,gbhuber),label="LS",color='green',linewidth=3)
 #plt.plot(range(100),difference(gblad,gbhuber),label="LAD",color='red',linewidth=3)
 plt.plot(range(100),wtr,label="with transfer",color='green',linewidth=3)

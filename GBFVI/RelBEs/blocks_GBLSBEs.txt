@@ -11,7 +11,7 @@ iteration: 9 average bellman error: 0.467144940779
 iteration: 10 average bellman error: 0.730654744663
 iteration: 11 average bellman error: 0.741731838296
 iteration: 12 average bellman error: 0.522095631238
-iteration: 13 average bellman error: 1.89431374567
+iteration: 13 average bellman error: 0.89431374567
 iteration: 14 average bellman error: 0.729996023632
 iteration: 15 average bellman error: 0.369031288191
 iteration: 16 average bellman error: 1.22723308117
@@ -25,7 +25,7 @@ iteration: 23 average bellman error: 0.515449916822
 iteration: 24 average bellman error: 1.16758707061
 iteration: 25 average bellman error: 0.948188703709
 iteration: 26 average bellman error: 0.097
-iteration: 27 average bellman error: 1.45362642526
+iteration: 27 average bellman error: 0.45362642526
 iteration: 28 average bellman error: 0.795580804445
 iteration: 29 average bellman error: 0.64071302828
 iteration: 30 average bellman error: 0.36903128819
