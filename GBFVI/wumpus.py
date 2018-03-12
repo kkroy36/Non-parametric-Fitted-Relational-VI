@@ -15,8 +15,14 @@ class Wumpus(object):
             self.grid = [[0 for i in range(N)] for j in range(N)]
             self.goal_x,self.goal_y = self.size-1,self.size-1
             self.all_actions = ["left","right","top","down"]
-            self.grid[2][1] = 1 #wumpus
-            self.grid[3][1] = -1 #pit
+            x_w,y_w = random.randint(0,3),random.randint(0,3)
+            while x_w != self.goal_x and y_w != self.goal_y:
+                x_w,y_w = random.randint(0,3),random.randint(0,3)
+            self.grid[x_w][y_w] = 1 #wumpus
+            x_w,y_w = random.randint(0,3),random.randint(0,3)
+            while x_w != self.goal_x and y_w != self.goal_y:
+                x_w,y_w = random.randint(0,3),random.randint(0,3)
+            self.grid[x_w][y_w] = -1 #pit
             self.position = (0,0)
 
     def goal(self):
