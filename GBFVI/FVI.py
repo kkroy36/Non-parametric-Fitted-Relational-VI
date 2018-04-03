@@ -77,6 +77,8 @@ class FVI(object):
                 state = Logistics(number=self.state_number,start=True)
                 if not bk:
                     bk = Logistics.bk
+		    print (Logistics.reward_function)
+		    exit()
             elif self.simulator == "pong":
                 state = Pong(number=self.state_number,start=True)
                 if not bk:
