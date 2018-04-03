@@ -69,7 +69,7 @@ class FVI(object):
 	   Note that in the transfer start state, parameters to allow different grid sizes,
 	   lets say for wumpus world can be set during object call if allowable by the constructor.
 	'''
-        facts,examples,bk = [],[],[]
+        facts,examples,bk,reward_function = [],[],[],[]
         i = 0
         values = {}
         while i < 1: #at least one iteration burn in time
@@ -77,8 +77,9 @@ class FVI(object):
                 state = Logistics(number=self.state_number,start=True)
                 if not bk:
                     bk = Logistics.bk
-		    print (Logistics.reward_function)
-		    exit()
+		    reward_function = Logistics.reward_function
+		    print (reward_function)
+      		    exit()
             elif self.simulator == "pong":
                 state = Pong(number=self.state_number,start=True)
                 if not bk:
