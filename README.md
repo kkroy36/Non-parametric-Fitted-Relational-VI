@@ -30,3 +30,5 @@
 2. For stable results and to perform as per theoretical expectation best to *increase initial model computation iterations in compute transfer model function* and/or *increase batch size* and *fix the policy during comparison in the execute random action function present in all simulators*
 
 contact: kxr150330@utdallas.edu
+
+**This is still in development.. So, please wait for a while until it is pefected. Go ahead and test the version that is there, I'd love to learn about more issues that the code might have**
