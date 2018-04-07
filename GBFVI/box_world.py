@@ -143,8 +143,6 @@ class Logistics(object): #represents a world state
           "destination(+state,+city)",
           "value(state)"]
 
-    reward_function = ["destination(J,N);bOn(J,Q,F) 0.95757128571428","tIn(J,F,N);destination(J,N);bOn(J,Q,F) 1.0"]
-
     def get_move_combinations(self,trucks,cities):
         combinations = []
         for truck in trucks:

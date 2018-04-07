@@ -7,6 +7,7 @@ from net_admin import Admin
 #from pong import Pong #--> uncomment to run Pong
 from tetris import Tetris #--> uncomment to run Tetris
 from time import clock
+from copy import deepcopy
 from GradientBoosting import GradientBoosting
 
 class FVI(object):
@@ -28,16 +29,34 @@ class FVI(object):
 
     def compute_value_of_trajectory(self,values,trajectory,discount_factor=0.97,goal_value=10,AVI=False):
 	'''computes the value of a trajectory
-           if trajectory from AVI=True, then gather next state value from prediciton
-           else gather it from the discounted number of steps from the goal times the goal reward
-           there is only one trajectory, therefore, R + gamma*expected(next_state_value) becomes
-           R + gamma*next_state_value
-	   hence this was carried out as shown in the code
-           reason for not averaging (expected value) is because everytime the objects are different
-           Hence, it may appear to be a TD update, but it is not.
-	''' 
-        reversed_trajectory = trajectory[::-1]
+           by value iteration until convergence
+	'''
+	reversed_trajectory = trajectory[::-1]
         number_of_transitions = len(reversed_trajectory)
+	immediate_reward = -1
+	while True:
+            old_values = deepcopy(values)
+            for i in range(number_of_transitions):
+                if i == 0:
+                    next_state_value = goal_value
+                    current_state_number = reversed_trajectory[i][0]
+                    current_state = reversed_trajectory[i][1]
+                    value_of_state = immediate_reward + discount_factor*next_state_value #V(S) = R(S) + gamma*V(S')
+                    key = (current_state_number,tuple(current_state))
+                    values[key] = value_of_state
+                else:
+                    next_state_number = reversed_trajectory[i-1][0]
+                    next_state = reversed_trajectory[i-1][1]
+                    next_state_value = values[(next_state_number,tuple(next_state))]
+                    current_state_number = reversed_trajectory[i][0]
+                    current_state = reversed_trajectory[i][1]
+                    value_of_state = immediate_reward + discount_factor*next_state_value
+                    key = (current_state_number,tuple(current_state))
+                    values[key] = value_of_state
+            if old_values == values:
+                break #convergence
+        '''                
+            
         if not AVI:
             for i in range(number_of_transitions):
                 state_number = reversed_trajectory[i][0]
@@ -58,6 +77,7 @@ class FVI(object):
                 value_of_state = discount_factor*value_of_next_state
                 key = (state_number,tuple(state))
                 values[key] = value_of_state
+        '''
                 
             
     def compute_transfer_model(self):
@@ -77,9 +97,6 @@ class FVI(object):
                 state = Logistics(number=self.state_number,start=True)
                 if not bk:
                     bk = Logistics.bk
-		    reward_function = Logistics.reward_function
-		    print (reward_function)
-      		    exit()
             elif self.simulator == "pong":
                 state = Pong(number=self.state_number,start=True)
                 if not bk:

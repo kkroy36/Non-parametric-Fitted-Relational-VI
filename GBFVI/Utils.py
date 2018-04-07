@@ -51,7 +51,7 @@ class Data(object):
             value = float(example.split(' ')[1]) # get true regression value
             if predicate.split('(')[0] == target:
                 self.examplesTrueValue[predicate] = value #store true value of example
-                self.examples[predicate] = value - sum(values)/float(len(values)) #set value for example, otherwise no variance
+                self.examples[predicate] = value# - sum(values)/float(len(values)) #set value for example, otherwise no variance
 
     def setNeg(self,neg,target):
         '''set negative examples from neg list'''
