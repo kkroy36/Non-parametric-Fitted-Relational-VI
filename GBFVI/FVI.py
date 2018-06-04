@@ -34,8 +34,9 @@ class FVI(object):
 	reversed_trajectory = trajectory[::-1]
         number_of_transitions = len(reversed_trajectory)
 	immediate_reward = -1
-	while True:
-            old_values = deepcopy(values)
+	if not AVI: #if not AVI i.e. for first iteration perform value iteration for initial values 
+	    #while True:
+            #old_values = deepcopy(values)
             for i in range(number_of_transitions):
                 if i == 0:
                     next_state_value = goal_value
@@ -53,8 +54,25 @@ class FVI(object):
                     value_of_state = immediate_reward + discount_factor*next_state_value
                     key = (current_state_number,tuple(current_state))
                     values[key] = value_of_state
-            if old_values == values:
-                break #convergence
+            #if abs(old_values - values) < 0.01:
+                #break #convergence
+	elif AVI: #perform value iteration by infering value of next state for value iteration from fiitted model
+	    #while True:
+	    #old_values = deepcopy(values)
+	    for i in range(number_of_transitions-1):
+		state_number = trajectory[i][0]
+		state = trajectory[i][1]
+		next_state_number = trajectory[i+1][0]
+		next_state = trajectory[i+1][1]
+                facts = list(next_state)
+                examples = ["value(s"+str(next_state_number)+") "+str(0.0)]
+                self.model.infer(facts,examples)
+                value_of_next_state = self.model.testExamples["value"]["value(s"+str(next_state_number)+")"]
+                value_of_state = discount_factor*value_of_next_state
+                key = (state_number,tuple(state))
+                values[key] = value_of_state
+	    #if abs(old_values - values) < 0.01:
+		#break 
         '''                
             
         if not AVI:
@@ -271,7 +289,7 @@ class FVI(object):
                         elif self.simulator == "net_id" and time_elapsed > 1:
                             within_time = False
                     if within_time:
-                        self.compute_value_of_trajectory(values,trajectory)
+                        self.compute_value_of_trajectory(values,trajectory,AVI=True) #perform computation using fitted value iteration
 			self.state_number += 1
                         for key in values:
                             facts += list(key[1])
