@@ -12,8 +12,8 @@ from GradientBoosting import GradientBoosting
 
 
 class FVI(object):
-
-    def __init__(self, transfer=0, simulator="logistics", batch_size=1, number_of_iterations=10, loss="LS", trees=10):
+    """Settings for experiments batch_size=10, no_of_iterations=50, trees=1 (baseline), 3, 5, no_of_runs=5 & 10"""
+    def __init__(self, transfer=0, simulator="logistics", batch_size=10, number_of_iterations=50, loss="LS", trees=10):
         '''transfer = 1, means a prespecified number of iterations are run and learning
            the regression model using RFGB, (relational model) before starting fitted
            value iteration with the learned values
