@@ -1,9 +1,9 @@
-from box_world import Logistics
-from wumpus import Wumpus
+#from box_world import Logistics
+#from wumpus import Wumpus
 from blocks import Blocks_world
-from blackjack import Game
-from chain import Chain
-from net_admin import Admin
+#from blackjack import Game
+#from chain import Chain
+#from net_admin import Admin
 # from pong import Pong #--> uncomment to run Pong
 # from tetris import Tetris #--> uncomment to run Tetris
 from time import clock
@@ -130,11 +130,10 @@ class FVI(object):
            Note that in the transfer start state, parameters to allow different grid sizes,
            lets say for wumpus world can be set during object call if allowable by the constructor.
         '''
-        raw_input("came here")
         facts, examples, bk, reward_function = [], [], [], []
         i = 0
         values = {}
-        while i < 1:  # at least one iteration burn in time
+        while i < 5:  # at least ten iteration burn in time
             if self.simulator == "logistics":
                 state = Logistics(number=self.state_number, start=True)
                 if not bk:
@@ -364,30 +363,26 @@ class FVI(object):
             targets = self.get_targets(examples)
             self.model.setTargets(targets)
             self.model.learn(facts, examples, bk)
-            
-            for i in range(50): #test trajectories
-                j = 0
-                while j < 1: #self.batch_size:
-                    if self.simulator == "logistics":
-                        state = Logistics(number=self.state_number, start=True)
-                        time_elapsed = 0
-                        within_time = True
-                        start = clock()
-                        trajectory = []
-                        while not state.goal():
-                            s_number = state.state_number
-                            s_facts = state.get_state_facts()
-                            state_action_pair = state.execute_random_action()
-                            state = state_action_pair[0]
-                            action = state_action_pair[1][0][:-1]
-                            trajectory.append((s_number, s_facts+[action]))
-                            end = clock()
-                            time_elapsed = abs(end-start)
-                            if self.simulator == "logistics" and time_elapsed > 0.5:
-                                within_time = False
-                                break
-                        if within_time:
-                            self.init_values(values, trajectory)
-                            self.compute_value_of_trajectory(values, trajectory, AVI=True, testCompute=True)
-                            self.state_number += 1
-                            j += 1
+        for i in range(20): #test trajectories
+            if self.simulator == "logistics":
+                state = Logistics(number=self.state_number, start=True)
+                time_elapsed = 0
+                within_time = True
+                start = clock()
+                trajectory = []
+                while not state.goal():
+                    s_number = state.state_number
+                    s_facts = state.get_state_facts()
+                    state_action_pair = state.execute_random_action()
+                    state = state_action_pair[0]
+                    action = state_action_pair[1][0][:-1]
+                    trajectory.append((s_number, s_facts+[action]))
+                    end = clock()
+                    time_elapsed = abs(end-start)
+                    if self.simulator == "logistics" and time_elapsed > 0.5:
+                        within_time = False
+                        break
+                if within_time:
+                    self.init_values(values, trajectory)
+                    self.compute_value_of_trajectory(values, trajectory, AVI=True, testCompute=True)
+                    self.state_number += 1

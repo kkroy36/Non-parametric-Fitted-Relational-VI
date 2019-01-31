@@ -1,11 +1,17 @@
 import random
+from copy import deepcopy
 class Wumpus(object):
     '''represents the 2D wumpus world'''
 
     bk = ["stench(+state)",
           "breeze(+state)",
           "gold(+state)",
-          "value(state)"]
+          "adj(+state,-state)",
+          "adj(-state,+state)",
+          "right(state)",
+          "top(state)",
+          "down(state)",
+          "left(state)"]
 
     def __init__(self,N=4,number=1,start=False):
         '''class constructor'''
@@ -15,15 +21,10 @@ class Wumpus(object):
             self.grid = [[0 for i in range(N)] for j in range(N)]
             self.goal_x,self.goal_y = self.size-1,self.size-1
             self.all_actions = ["left","right","top","down"]
-            x_w,y_w = random.randint(0,3),random.randint(0,3)
-            while x_w != self.goal_x and y_w != self.goal_y:
-                x_w,y_w = random.randint(0,3),random.randint(0,3)
-            self.grid[x_w][y_w] = 1 #wumpus
-            x_w,y_w = random.randint(0,3),random.randint(0,3)
-            while x_w != self.goal_x and y_w != self.goal_y:
-                x_w,y_w = random.randint(0,3),random.randint(0,3)
-            self.grid[x_w][y_w] = -1 #pit
+            self.grid[2][1] = 1 #wumpus
+            self.grid[2][0] = -1 #pit
             self.position = (0,0)
+            self.prev_state = None
 
     def goal(self):
         if self.position == (self.goal_x,self.goal_y):
@@ -38,6 +39,7 @@ class Wumpus(object):
 
     def execute_action(self,action):
         '''takes an action and returns new state'''
+        self.prev_state = deepcopy(self)
         self.state_number += 1
         x,y = self.position[0],self.position[1]
         if action in self.all_actions:
@@ -67,6 +69,13 @@ class Wumpus(object):
 
     def get_state_facts(self):
         facts = []
+        if self.prev_state == None:
+            facts = ["start(s"+str(self.state_number)+")"]
+        else:
+            if self.prev_state.position == self.position:
+                return self.prev_state.get_state_facts()
+            else:
+                facts = ["adj(s"+str(self.prev_state.state_number)+",s"+str(self.state_number)+")"]
         valid = self.valid
         x,y = self.position[0],self.position[1]
         if x == self.goal_x and y == self.goal_y:
@@ -99,18 +108,63 @@ class Wumpus(object):
         return R
 
     def execute_random_action(self,N=4):
-        random_actions = []
-        action_potentials = []
-        for i in range(N):
-            random_action = random.choice(self.all_actions)
-            random_actions.append(random_action)
-            action_potentials.append(random.randint(1,9))
-        action_probabilities = [potential/float(sum(action_potentials)) for potential in action_potentials]
-        actions_not_executed = [action for action in self.all_actions if action != random_action]
-        probability_distribution_function = zip(random_actions,action_probabilities)
-        sampled_action = self.sample(probability_distribution_function)
-        new_state = self.execute_action(sampled_action)
-        return (new_state,[sampled_action],actions_not_executed)
+
+        if random.random() > 1:
+            #self.get_all_actions()
+            #random_actions = []
+            #action_potentials = []
+            '''
+            for i in range(N):
+                random_action = choice(self.all_actions)
+                random_actions.append(random_action)
+                action_potentials.append(randint(1, 9))
+            '''
+            N = len(self.all_actions)
+            action_potentials = [1 for i in range(N)]
+            action_probabilities = [potential/float(sum(action_potentials)) for potential in action_potentials]
+            probability_distribution_function = zip(self.all_actions, action_probabilities)
+            sampled_action = self.sample(probability_distribution_function)
+            sampled_action_string = sampled_action+"(s"+str(self.state_number)+")."
+            new_state = self.execute_action(sampled_action)
+            actions_not_executed = [action for action in self.all_actions if action != sampled_action]
+            return (new_state, [sampled_action_string], actions_not_executed)
+
+        else:
+            facts = self.get_state_facts()
+            if (("stench" not in fact for fact in facts) and ("breeze" not in fact for fact in facts)):
+                current_position = self.position
+                new_state = self.execute_action("top")
+                if new_state.position != current_position:
+                    sampled_action_string = "top"+"(s"+str(self.state_number)+")."
+                    actions_not_executed = [action for action in self.all_actions if action != "top"]
+                    return (new_state, [sampled_action_string], actions_not_executed)
+                else:
+                    new_state = self.execute_action("right")
+                    if new_state.position != current_position:
+                        sampled_action_string = "right"+"(s"+str(self.state_number)+")."
+                        actions_not_executed = [action for action in self.all_actions if action != "right"]
+                        return (new_state, [sampled_action_string], actions_not_executed)
+                    else:
+                        N = len(self.all_actions)
+                        action_potentials = [1 for i in range(N)]
+                        action_probabilities = [potential/float(sum(action_potentials)) for potential in action_potentials]
+                        probability_distribution_function = zip(self.all_actions, action_probabilities)
+                        sampled_action = self.sample(probability_distribution_function)
+                        sampled_action_string = sampled_action+"(s"+str(self.state_number)+")."
+                        new_state = self.execute_action(sampled_action)
+                        actions_not_executed = [action for action in self.all_actions if action != sampled_action]
+                        return (new_state, [sampled_action_string], actions_not_executed)
+            else:
+                N = len(self.all_actions)
+                action_potentials = [1 for i in range(N)]
+                action_probabilities = [potential/float(sum(action_potentials)) for potential in action_potentials]
+                probability_distribution_function = zip(self.all_actions, action_probabilities)
+                sampled_action = self.sample(probability_distribution_function)
+                sampled_action_string = sampled_action+"(s"+str(self.state_number)+")."
+                new_state = self.execute_action(sampled_action)
+                actions_not_executed = [action for action in self.all_actions if action != sampled_action]
+                return (new_state, [sampled_action_string], actions_not_executed)
+                        
     '''
     def factored(self,state):
         #returns a factored state of

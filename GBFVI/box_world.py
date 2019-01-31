@@ -318,25 +318,66 @@ class Logistics(object):  # represents a world state
         R = max(i for r in [random()] for i, c in cdf if c <= r)
         return R
 
+    def get_policy(self,actions,facts,state_number):
+        '''executes specific coded policy'''
+        for action in actions:
+            if action.split('(')[0] == "unload":
+                state = "s"+str(state_number)
+                box = action.split(',')[1]
+                truck = action.split(',')[2][:-2]
+                if (("tIn("+state+","+truck+",c3)" in facts) and ("bOn("+state+","+box+","+truck+")" in facts)):
+                    return (action)
+        for action in actions:
+            if action.split('(')[0] == "move":
+                state = "s"+str(state_number)
+                truck = action.split(',')[1]
+                city = action.split(',')[2][:-2]
+                if (("bOn("+truck in fact for fact in facts) and (city == "c3") and ("tIn("+state+","+truck+","+city+")" not in facts)):
+                    return (action)
+        for action in actions:
+            if action.split('(')[0] == "move":
+                state = "s"+str(state_number)
+                truck = action.split(',')[1]
+                city = action.split(',')[2][:-2]
+                if (("bOn("+truck in fact for fact in facts) and (city == "c2") and ("tIn("+state+","+truck+","+city+")" not in facts)):
+                    return (action)
+        return (False)
+            
+
     def execute_random_action(self, N=3):
         self.get_all_actions()
-        #random_actions = []
-        #action_potentials = []
-        '''
-        for i in range(N):
-            random_action = choice(self.all_actions)
-            random_actions.append(random_action)
-            action_potentials.append(randint(1, 9))
-        '''
-        N = len(self.all_actions)
-        action_potentials = [1 for i in range(N)]
-        action_probabilities = [potential/float(sum(action_potentials)) for potential in action_potentials]
-        probability_distribution_function = zip(
-            self.all_actions, action_probabilities)
-        sampled_action = self.sample(probability_distribution_function)
-        new_state = self.execute_action(sampled_action)
-        actions_not_executed = [action for action in self.all_actions if action != sampled_action]
-        return (new_state, [sampled_action], actions_not_executed)
+        if random() < 0.7:
+            policy = self.get_policy(self.all_actions,self.get_state_facts(),self.state_number)
+            #random_actions = []
+            #action_potentials = []
+            '''
+            for i in range(N):
+                random_action = choice(self.all_actions)
+                random_actions.append(random_action)
+                action_potentials.append(randint(1, 9))
+            '''
+            if not policy:
+                N = len(self.all_actions)
+                action_potentials = [1 for i in range(N)]
+                action_probabilities = [potential/float(sum(action_potentials)) for potential in action_potentials]
+                probability_distribution_function = zip(self.all_actions, action_probabilities)
+                sampled_action = self.sample(probability_distribution_function)
+                new_state = self.execute_action(sampled_action)
+                actions_not_executed = [action for action in self.all_actions if action != sampled_action]
+                return (new_state, [sampled_action], actions_not_executed)
+            else:
+                new_state = self.execute_action(policy)
+                actions_not_executed = [action for action in self.all_actions if action != policy]
+                return (new_state, [policy], actions_not_executed)
+        else:
+            N = len(self.all_actions)
+            action_potentials = [1 for i in range(N)]
+            action_probabilities = [potential/float(sum(action_potentials)) for potential in action_potentials]
+            probability_distribution_function = zip(self.all_actions, action_probabilities)
+            sampled_action = self.sample(probability_distribution_function)
+            new_state = self.execute_action(sampled_action)
+            actions_not_executed = [action for action in self.all_actions if action != sampled_action]
+            return (new_state, [sampled_action], actions_not_executed)
 
     def __repr__(self):
         return_string = ""

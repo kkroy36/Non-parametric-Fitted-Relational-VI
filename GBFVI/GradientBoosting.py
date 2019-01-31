@@ -27,16 +27,21 @@ class GradientBoosting(object):
             data = Utils.setTrainingData(target=target,facts=facts,examples=examples,bk=bk,regression=self.regression,sampling_rate = self.sampling_rate)
             trees = []
             for i in range(self.numberOfTrees):
-                print ('='*20,"learning tree",str(i),'='*20)
+                print ('='*20,"learning tree",str(i+1),'='*20)
                 node.setMaxDepth(self.treeDepth)
                 node.learnTree(data)
                 trees.append(node.learnedDecisionTree)
                 Boosting.updateGradients(data,trees,loss=self.loss)
-        self.trees[target] = trees
-        for tree in trees:
-            print ('='*30,"tree",str(trees.index(tree)),'='*30)
-            for clause in tree:
-                print (clause)
+            self.trees[target] = trees
+        for target in self.targets:
+            if target in self.trees:
+                number_of_trees = len(self.trees[target])
+                counter = 1
+                for tree in self.trees[target]:
+                    print ('='*30,"tree",str(counter),'='*30)
+                    for clause in tree:
+                        print (clause)
+                    counter += 1
 
     def infer(self,facts,examples):
         self.testExamples = {}
@@ -44,4 +49,4 @@ class GradientBoosting(object):
             data = Utils.setTestData(target=target,facts=facts,examples=examples,regression=self.regression)
             Boosting.performInference(data,self.trees[target])
             self.testExamples[target] = data.examples
-            print (data.examples)
+            #print (data.examples)

@@ -1,4 +1,5 @@
 import random
+from copy import deepcopy
 
 class Block():
 
@@ -46,15 +47,12 @@ class Tower():
         return False
 
     def __repr__(self):
-        r = "["
-        for block in self.get_blocks():
-            r += str(block)+", "
-        return r[:-2]+"]"
+        return "t"+str(self.tower_number)
     
 class Blocks_world():
 
     bk = ["on(+state,+block,-block)",
-          "value(state)"]
+          "putDown(state,tower,block)"]
 
     def __init__(self,number=1,start=False):
         if start:
@@ -105,19 +103,44 @@ class Blocks_world():
 
     def execute_random_action(self):
         self.get_all_actions()
-        N = len(self.all_actions)
-        random_actions = []
-        action_potentials = []
-        for i in range(N):
-            random_action = random.choice(self.all_actions)
-            random_actions.append(random_action)
-            action_potentials.append(random.randint(1,9))
-        action_probabilities = [potential/float(sum(action_potentials)) for potential in action_potentials]
-        actions_not_executed = [action for action in self.all_actions if action != random_action]
-        probability_distribution_function = zip(random_actions,action_probabilities)
-        sampled_action = self.sample(probability_distribution_function)
-        new_state = self.execute_action(sampled_action)
-        return (new_state,[sampled_action],actions_not_executed)
+        if random.random() > 0.9:
+            #random_actions = []
+            #action_potentials = []
+            '''
+            for i in range(N):
+                random_action = choice(self.all_actions)
+                random_actions.append(random_action)
+                action_potentials.append(randint(1, 9))
+            '''
+            N = len(self.all_actions)
+            action_potentials = [1 for i in range(N)]
+            action_probabilities = [potential/float(sum(action_potentials)) for potential in action_potentials]
+            probability_distribution_function = zip(self.all_actions, action_probabilities)
+            sampled_action = self.sample(probability_distribution_function)
+            sampled_action_string = "putDown(s"+str(self.state_number)+","+str(sampled_action[0])+","+str(sampled_action[1])+")."
+            new_state = self.execute_action(sampled_action)
+            actions_not_executed = [action for action in self.all_actions if action != sampled_action]
+            return (new_state, [sampled_action_string], actions_not_executed)
+        else:
+            for tower in self.towers:
+                if tower.too_high():
+                    block = tower.get_top_block()
+                    action = (tower,block)
+                    action_string = "putDown(s"+str(self.state_number)+","+str(action[0])+","+str(action[1])+")."
+                    new_state = self.execute_action(action)
+                    actions_not_executed = [action for action in self.all_actions if action != action]
+                    return (new_state, [action_string], actions_not_executed)
+                else:
+                    N = len(self.all_actions)
+                    action_potentials = [1 for i in range(N)]
+                    action_probabilities = [potential/float(sum(action_potentials)) for potential in action_potentials]
+                    probability_distribution_function = zip(self.all_actions, action_probabilities)
+                    sampled_action = self.sample(probability_distribution_function)
+                    sampled_action_string = "putDown(s"+str(self.state_number)+","+str(sampled_action[0])+","+str(sampled_action[1])+")."
+                    new_state = self.execute_action(sampled_action)
+                    actions_not_executed = [action for action in self.all_actions if action != sampled_action]
+                    return (new_state, [sampled_action_string], actions_not_executed)
+                    
 
 '''
 with open("blocks_world_out.txt","a") as f:

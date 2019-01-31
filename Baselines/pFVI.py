@@ -1,5 +1,5 @@
 from blackjack import Game
-from Chain import Chain
+from chain import Chain
 from pong import Pong #--> uncomment to run Pong
 #from tetris import Tetris #--> uncomment to run Tetris
 from time import clock

@@ -31,4 +31,4 @@
 
 contact: kxr150330@utdallas.edu
 
-**This is still in development.. So, please wait for a while until it is pefected. Go ahead and test the version that is there, I'd love to learn about more issues that the code might have**
+**This is still in development. So, please wait for a while until it is pefected. Go ahead and test the version that is there, I'd love to learn about more issues that the code might have**

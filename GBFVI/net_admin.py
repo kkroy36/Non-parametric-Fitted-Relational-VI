@@ -21,6 +21,9 @@ class Node():
     def id(self):
         return self.node_number
 
+    def __repr__(self):
+        return "n"+str(self.node_number)
+
 class Network():
 
     def __init__(self,number):
@@ -47,11 +50,14 @@ class Network():
                 return True
         return False
 
+    def __repr__(self):
+        return "n"+str(self.network_number)
+
 class Admin():
 
     bk = ["nodeIn(+state,+node,+network)",
           "overloaded(+state,+node)",
-          "value(state)"]
+          "dontAdd(state,network,node)"]
 
     def __init__(self,number=1,start=False):
         if start:
@@ -98,19 +104,28 @@ class Admin():
 
     def execute_random_action(self):
         self.get_all_actions()
-        N = len(self.all_actions)
-        random_actions = []
-        action_potentials = []
+        #random_actions = []
+        #action_potentials = []
+        '''
         for i in range(N):
-            random_action = random.choice(self.all_actions)
+            random_action = choice(self.all_actions)
             random_actions.append(random_action)
-            action_potentials.append(random.randint(1,9))
+            action_potentials.append(randint(1, 9))
+        '''
+        N = len(self.all_actions)
+        action_potentials = [float("1"+".00"+str(i)) for i in range(N)]
         action_probabilities = [potential/float(sum(action_potentials)) for potential in action_potentials]
-        actions_not_executed = [action for action in self.all_actions if action != random_action]
-        probability_distribution_function = zip(random_actions,action_probabilities)
+        probability_distribution_function = zip(
+            self.all_actions, action_probabilities)
         sampled_action = self.sample(probability_distribution_function)
+        sampled_action_string = "dontAdd(s"+str(self.state_number)+","+str(sampled_action[0])+","+str(sampled_action[1])+")."
         new_state = self.execute_action(sampled_action)
-        return (new_state,[sampled_action],actions_not_executed)
+        actions_not_executed = [action for action in self.all_actions if action != sampled_action]
+        return (new_state, [sampled_action_string], actions_not_executed)
+        '''
+        action_predicate = "dontAdd(s"+str(new_state.state_number)+","+str(sampled_action[0])+","+str(sampled_action[1])+")."
+        return (new_state,[action_predicate],actions_not_executed)
+        '''
 '''
 with open("net_admin_out.txt","a") as f:
     i = 0
