@@ -1,6 +1,6 @@
-#from box_world import Logistics
+from box_world import Logistics
 #from wumpus import Wumpus
-from blocks import Blocks_world
+#from blocks import Blocks_world
 #from blackjack import Game
 #from chain import Chain
 #from net_admin import Admin
@@ -118,6 +118,7 @@ class FVI(object):
         '''
         for item in trajectory:
             key = item[1][-1]
+            print "key is", key
             if key not in values:
                 values[key] = {}
 
@@ -212,6 +213,7 @@ class FVI(object):
                         within_time = False
                         break
                 if within_time:
+                    print "The trajectory is",trajectory
                     self.init_values(values, trajectory)
                     self.compute_value_of_trajectory(values, trajectory)
                     self.state_number += len(trajectory)+1
@@ -328,6 +330,7 @@ class FVI(object):
                             break
                         elif self.simulator == "net_id" and time_elapsed > 1:
                             within_time = False
+                        #print "The value of a trajectory is", trajectory    
                     if within_time:
                         self.init_values(values, trajectory)
                         if i == 0:
