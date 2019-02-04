@@ -335,11 +335,11 @@ class FVI(object):
                         self.init_values(values, trajectory)
                         if i == 0:
                             self.compute_value_of_trajectory(
-                                values, trajectory, AVI=True, testCompute=True)
+                                values, trajectory, AVI=True, testCompute=False)
                         else:
                             # perform computation using fitted value iteration
                             self.compute_value_of_trajectory(
-                                values, trajectory, AVI=True, testCompute=True)
+                                values, trajectory, AVI=True, testCompute=False)
                         self.state_number += 1
                         for key in values:
                             if values[key]:
