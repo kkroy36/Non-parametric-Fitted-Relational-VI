@@ -31,7 +31,7 @@ class FVI(object):
         self.test_trajectory_no=test_trajectory_length
         """These are the statistics that needs to be averaged accross runs"""
         self.bellman_error=[]
-        
+        self.total_rewards = []
         """These contain true and infered Q(s,a) values for every state action pair in the test trajectory"""
         self.true_state_action_val=[]
         self.inf_state_action_val=[]
@@ -55,6 +55,7 @@ class FVI(object):
         reversed_trajectory = trajectory[::-1]
         number_of_transitions = len(reversed_trajectory)
         immediate_reward = -1
+        total = 0.0
         if not AVI:  # if not AVI i.e. for first iteration perform value iteration for initial values
             # while True:
             #old_values = deepcopy(values)
@@ -66,6 +67,7 @@ class FVI(object):
                     current_action = reversed_trajectory[i][1][-1]
                     value_of_state = immediate_reward + discount_factor * next_state_value  # V(S) = R(S) + gamma*goal_value
                     key = (current_state_number, tuple(current_state[:-1]))
+                    total += value_of_state
                     values[current_action][key] = value_of_state
                 else:
                     next_state_number = reversed_trajectory[i-1][0]
@@ -77,6 +79,7 @@ class FVI(object):
                     current_action = reversed_trajectory[i][1][-1]
                     value_of_state = immediate_reward + discount_factor*next_state_value #V(S) = R(S) + gamma*V(S')
                     key = (current_state_number, tuple(current_state[:-1]))
+                    total += value_of_state
                     values[current_action][key] = value_of_state
             
         elif AVI:  # perform value iteration by infering value of next state for value iteration from fiitted model
@@ -98,7 +101,9 @@ class FVI(object):
                     value_of_next_state = 0.0
                 value_of_state = immediate_reward + discount_factor * value_of_next_state  # V(S) = R(S) + gamma*V_hat(S')
                 key = (state_number, tuple(state[:-1]))
+                total += value_of_state
                 values[state_action][key] = value_of_state
+        return (total)
                 
     def compute_value_of_test_trajectory(self, values, trajectory, discount_factor=0.99, goal_value=1.0, AVI=False):
         '''computes the value of a trajectory
@@ -301,7 +306,7 @@ class FVI(object):
                 if within_time:
                     #print "The trajectory is",trajectory
                     self.init_values(values, trajectory)
-                    self.compute_value_of_trajectory(values, trajectory)
+                    total = self.compute_value_of_trajectory(values, trajectory)
                     self.state_number += len(trajectory)+1
                     for target in values:
                         for state in values[target]:
@@ -357,6 +362,7 @@ class FVI(object):
         #values = {}
         for i in range(self.number_of_iterations):
             trajectories = []
+            totals = []
             j = 0
             facts, examples, bk = [], [], []
             values = {}
@@ -440,12 +446,12 @@ class FVI(object):
                     if within_time:
                         self.init_values(values, trajectory)
                         if i == 0:
-                            self.compute_value_of_trajectory(
-                                values, trajectory, AVI=True)
+                            totals.append(self.compute_value_of_trajectory(
+                                values, trajectory, AVI=True))
                         else:
                             # perform computation using fitted value iteration
-                            self.compute_value_of_trajectory(
-                                values, trajectory, AVI=True)
+                            totals.append(self.compute_value_of_trajectory(
+                                values, trajectory, AVI=True))
                         self.state_number += 1
                         print "The value function is", values
                         for key in values:
@@ -457,6 +463,9 @@ class FVI(object):
                                         str(values[key][state_key])
                                 examples.append(examples_string)
                         j += 1
+            with open("average_cumulative_rewards.txt","a") as fp:
+                self.total_rewards.append(sum(totals)/float(len(totals)))
+                fp.write(str(sum(totals)/float(len(totals)))+"\n")
             # self.model.infer(facts,examples)
             fitted_values = self.model.infer(facts, examples)
             bellman_error = self.compute_bellman_error(trajectories)
