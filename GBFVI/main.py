@@ -33,7 +33,7 @@ np.set_printoptions(threshold=np.inf)
 
 for run in range(0,no_of_runs):
   print "Beginning run no", run  
-  model=FVI(simulator="logistics",trees=3,batch_size=5,number_of_iterations=50, path=path,runs=no_of_runs, policy=policy,run_latest=run,loss="LAD",test_trajectory_length=test_trajectory_length) #logistics default
+  model=FVI(simulator="logistics",trees=1,batch_size=5,number_of_iterations=50, path=path,runs=no_of_runs, policy=policy,run_latest=run,loss="LS",test_trajectory_length=test_trajectory_length) #logistics default
   """Statistics for a single run"""
   all_run_bellman_error.append(model.bellman_error)
   
