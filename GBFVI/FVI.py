@@ -319,25 +319,44 @@ class FVI(object):
         if self.transfer:
             self.AVI()
 
-    def compute_bellman_error(self, values):
+    def compute_bellman_error(self, trajectories):
+        '''computes max bellman error for every iteration'''
         bellman_errors = []
-        for key in values:
-            inferred_value = 0.0
-            try:
-                inferred_value = self.model.testExamples[key.split('(')[
-                    0]][key]
-            except:
-                inferred_value = 0.0
-            state_action_value = values[key]
-            for state in state_action_value:
-                value = state_action_value[state]
-                bellman_errors.append(abs(value-inferred_value))
-        # average bellman error
-        return sum(bellman_errors)/float(len(bellman_errors))
+        immediate_reward = -1
+        discount_factor = 0.99
+        for trajectory in trajectories:
+            number_of_transitions = len(trajectory)
+            for i in range(number_of_transitions-1):
+                state_number = trajectory[i][0]
+                state = trajectory[i][1][:-1]
+                state_action = trajectory[i][1][-1]
+                next_state_number = trajectory[i+1][0]
+                next_state = trajectory[i+1][1][:-1]
+                next_state_action = trajectory[i+1][1][-1]
+                #print 'current_state,current_action.next_state,next_state_action',state,state_action,next_state,next_state_action
+                facts = list(next_state)
+                examples = [next_state_action+" "+str(0.0)]
+                value_of_next_state = 0.0
+                value_of_current_state = 0.0
+                try:
+                    self.model.infer(list(state),[state_action+" "+str(0.0)])
+                    value_of_current_state = self.model.testExamples[state_action.split('(')[0]][state_action]
+                except:
+                    value_of_current_state = 0.0
+                try:
+                    self.model.infer(facts, examples)
+                    value_of_next_state = self.model.testExamples[next_state_action.split('(')[0]][next_state_action]
+                except:
+                    value_of_next_state = 0.0
+                bellman_error = abs((immediate_reward + discount_factor * value_of_next_state) - value_of_current_state)  # |R(S) + gamma*V_hat(S') - V_hat(S)|
+                bellman_errors.append(bellman_error)
+        return (sum(bellman_errors)/float(len(bellman_errors))) #return average or max, right now average
+        
 
     def AVI(self):
         #values = {}
         for i in range(self.number_of_iterations):
+            trajectories = []
             j = 0
             facts, examples, bk = [], [], []
             values = {}
@@ -416,7 +435,8 @@ class FVI(object):
                             break
                         elif self.simulator == "net_id" and time_elapsed > 1:
                             within_time = False
-                    #print "The  trajectory is", trajectory    
+                    #print "The  trajectory is", trajectory
+                    trajectories.append(trajectory)
                     if within_time:
                         self.init_values(values, trajectory)
                         if i == 0:
@@ -439,7 +459,7 @@ class FVI(object):
                         j += 1
             # self.model.infer(facts,examples)
             fitted_values = self.model.infer(facts, examples)
-            bellman_error = self.compute_bellman_error(values)
+            bellman_error = self.compute_bellman_error(trajectories)
             self.bellman_error.append(bellman_error)
             with open(self.resultpath+self.simulator+"_BEs.txt", "a") as f:
                 f.write("iteration: "+str(i) +
@@ -483,5 +503,3 @@ class FVI(object):
                     self.compute_value_of_test_trajectory(values, trajectory, AVI=True)
                     self.state_number += 1
             i += 1
-        
-                    
