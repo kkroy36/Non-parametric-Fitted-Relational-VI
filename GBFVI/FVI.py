@@ -13,8 +13,8 @@ from GradientBoosting import GradientBoosting
 path="C://Users//sxd170431//Desktop//Work//Projects//Relational_RL//Results//"
 
 class FVI(object):
-    """Settings for experiments batch_size=10, no_of_iterations=50, trees=1 (baseline), 3, 5, no_of_runs=5 & 10"""
-    def __init__(self, transfer=0, simulator="logistics", batch_size=10, number_of_iterations=50, loss="LS", trees=10,path=path,runs=5, policy=0.9,run_latest=0):
+    
+    def __init__(self, transfer=0, simulator="logistics", batch_size=10, number_of_iterations=50, loss="LS", trees=10,path=path,runs=5, policy=0.9,run_latest=0,test_trajectory_length=50):
         '''transfer = 1, means a prespecified number of iterations are run and learning
            the regression model using RFGB, (relational model) before starting fitted
            value iteration with the learned values
@@ -28,7 +28,7 @@ class FVI(object):
         self.model = None
         self.state_number = 1
         self.current_run=run_latest
-        
+        self.test_trajectory_no=test_trajectory_length
         """These are the statistics that needs to be averaged accross runs"""
         self.bellman_error=[]
         
@@ -455,7 +455,7 @@ class FVI(object):
             self.model.setTargets(targets)
             self.model.learn(facts, examples, bk)
         i = 0 
-        while i < 20: #test trajectories for logistics
+        while i < self.test_trajectory_no: #test trajectories for logistics
             if self.simulator == "logistics": # Add other domains specific to testing
                 state = Logistics(number=self.state_number, start=True)
                 time_elapsed = 0

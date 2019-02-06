@@ -346,7 +346,7 @@ class Logistics(object):  # represents a world state
 
     def execute_random_action(self, N=3):
         self.get_all_actions()
-        if random() < 0.7:
+        if random() < 0.9:
             policy = self.get_policy(self.all_actions,self.get_state_facts(),self.state_number)
             #random_actions = []
             #action_potentials = []

@@ -15,9 +15,11 @@ import numpy as np
 """Sample path: C:\Users\sxd170431\Desktop\Work\Projects\Relational_RL\Results\logistics\Runs_1\Policy_0.9\trees_3\LS"""
 
 path="C://Users//sxd170431//Desktop//Work//Projects//Relational_RL//Results//"
-no_of_runs=2
+no_of_runs=5
 policy=0.9
-no_of_state_actions_average=30
+no_of_state_actions_average=50
+test_trajectory_length=50
+#length_start_state=[]
 
 """Data structures for capturing values accross the runs"""
 all_run_bellman_error=[]
@@ -31,7 +33,7 @@ np.set_printoptions(threshold=np.inf)
 
 for run in range(0,no_of_runs):
   print "Beginning run no", run  
-  model=FVI(simulator="logistics",trees=3,batch_size=5,number_of_iterations=10, path=path,runs=no_of_runs, policy=policy,run_latest=run,loss="LS") #logistics default
+  model=FVI(simulator="logistics",trees=3,batch_size=5,number_of_iterations=50, path=path,runs=no_of_runs, policy=policy,run_latest=run,loss="LAD",test_trajectory_length=test_trajectory_length) #logistics default
   """Statistics for a single run"""
   all_run_bellman_error.append(model.bellman_error)
   
@@ -40,9 +42,9 @@ for run in range(0,no_of_runs):
   all_run_true_values.append(model.true_state_action_val[0:no_of_state_actions_average])
   all_run_infered_values.append(model.inf_state_action_val[0:no_of_state_actions_average])
   """Statistics for keeping the Q(s,a) of the start state of every trajectory"""
-  all_run_test_error_start.append(model.test_start_error_state_action)
-  all_run_true_values_start.append(model.true_start_state_action_val)
-  all_run_infered_values_start.append(model.inf_start_state_action_val)
+  all_run_test_error_start.append(model.test_start_error_state_action[0:test_trajectory_length-5])
+  all_run_true_values_start.append(model.true_start_state_action_val[0:test_trajectory_length-5])
+  all_run_infered_values_start.append(model.inf_start_state_action_val[0:test_trajectory_length-5])
   #FVI(simulator="blocks",trees=1,batch_size=3,number_of_iterations=2) #blocksworld
   #FVI(simulator="pong",batch_size=2,trees=1,loss="LS",number_of_iterations=20) #pong --> uncomment import statements from FVI.py
   #FVI(simulator="tetris",trees=1,loss="LS",number_of_iterations=20) #tetris --> uncomment import stmts from FVI.py
