@@ -1,5 +1,6 @@
 from box_world import Logistics
 import os
+from math import sqrt
 #from wumpus import Wumpus
 #from blocks import Blocks_world
 #from blackjack import Game
@@ -30,12 +31,15 @@ class FVI(object):
         self.current_run=run_latest
         self.test_trajectory_no=test_trajectory_length
         """These are the statistics that needs to be averaged accross runs"""
-        self.bellman_error=[]
+        self.bellman_error_avg=[]
+        self.bellman_error_max = []
         self.total_rewards = []
         """These contain true and infered Q(s,a) values for every state action pair in the test trajectory"""
         self.true_state_action_val=[]
         self.inf_state_action_val=[]
         self.test_error_state_action=[]
+        self.training_rmse = [] #root mean squared error
+        self.testing_rmse = [] #root mean squared error during testing
         
         """These contain true and infered Q(s,a) values for just the first state action pair in the test trajectory"""
         self.true_start_state_action_val=[]
@@ -324,7 +328,7 @@ class FVI(object):
         if self.transfer:
             self.AVI()
 
-    def compute_bellman_error(self, trajectories):
+    def compute_bellman_error(self, trajectories,aggregate='avg'):
         '''computes max bellman error for every iteration'''
         bellman_errors = []
         immediate_reward = -1
@@ -355,13 +359,32 @@ class FVI(object):
                     value_of_next_state = 0.0
                 bellman_error = abs((immediate_reward + discount_factor * value_of_next_state) - value_of_current_state)  # |R(S) + gamma*V_hat(S') - V_hat(S)|
                 bellman_errors.append(bellman_error)
-        return (sum(bellman_errors)/float(len(bellman_errors))) #return average or max, right now average
-        #return (max(bellman_errors))
-        
+        if aggregate == 'avg':
+            return (sum(bellman_errors)/float(len(bellman_errors))) #return average or max, right now average
+        elif aggregate == 'max':
+            return (max(bellman_errors))
+
+    def compute_test_error(self,values):
+        '''computers test error during training'''
+        test_errors = []
+        for key in values:
+            inferred_value = 0.0
+            try:
+                inferred_value = self.model.testExamples[key.split('(')[
+                    0]][key]
+            except:
+                inferred_value = 0.0
+            state_action_value = values[key]
+            for state in state_action_value:
+                value = state_action_value[state]
+                test_errors.append(abs(value-inferred_value))
+        squared_test_errors = [item**2 for item in test_errors]
+        return (sqrt(sum(squared_test_errors)/float(len(test_errors))))
 
     def AVI(self):
         #values = {}
         for i in range(self.number_of_iterations):
+            training_rmses = []
             trajectories = []
             totals = []
             j = 0
@@ -463,14 +486,19 @@ class FVI(object):
                                     examples_string += " " + \
                                         str(values[key][state_key])
                                 examples.append(examples_string)
+                        rmse_train = self.compute_test_error(values)
                         j += 1
+            training_rmses.append(rmse_train)
+            self.training_rmse.append(sum(training_rmses)/float(len(training_rmses)))
             with open("average_cumulative_rewards.txt","a") as fp:
                 self.total_rewards.append(sum(totals)/float(len(totals)))
                 fp.write(str(sum(totals)/float(len(totals)))+"\n")
             # self.model.infer(facts,examples)
             fitted_values = self.model.infer(facts, examples)
-            bellman_error = self.compute_bellman_error(trajectories)
-            self.bellman_error.append(bellman_error)
+            bellman_error = self.compute_bellman_error(trajectories,aggregate='avg')            
+            self.bellman_error_avg.append(bellman_error)
+            bellman_error = self.compute_bellman_error(trajectories,aggregate='max')
+            self.bellman_error_max.append(bellman_error)
             with open(self.resultpath+self.simulator+"_BEs.txt", "a") as f:
                 f.write("iteration: "+str(i) +
                         " average bellman error: "+str(bellman_error)+"\n")
@@ -484,6 +512,7 @@ class FVI(object):
             targets = self.get_targets(examples)
             self.model.setTargets(targets)
             self.model.learn(facts, examples, bk)
+        
         i = 0 
         while i < self.test_trajectory_no: #test trajectories for logistics
             if self.simulator == "logistics": # Add other domains specific to testing
@@ -511,5 +540,7 @@ class FVI(object):
                     #raw_input()
                     self.init_values(values, trajectory)
                     self.compute_value_of_test_trajectory(values, trajectory, AVI=True)
+                    rmse_test = self.compute_test_error(values)
+                    self.testing_rmse.append(rmse_test)
                     self.state_number += 1
             i += 1
