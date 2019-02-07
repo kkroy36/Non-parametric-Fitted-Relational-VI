@@ -1,0 +1,16 @@
+move(E,I,M):- 0.0
+move(A,R,Y):-tIn(A,R,Y) 0.283248044888
+move(A,R,Y):- 1.11022302463e-16
+unload(T,V,P):- 0.0
+move(A,X,N):-bOn(A,Y,X) -3.99946742391e-13
+move(A,X,N):- 2.00017780116e-12
+move(L,I,G):- 0.0
+move(I,U,R):- 0.0
+move(Q,Z,K):- 0.0
+move(R,W,S):- 0.0
+unload(Y,W,L):- 0.0
+move(M,E,V):- 0.0
+unload(V,J,N):- 0.0
+move(H,A,P):- 0.0
+move(N,K,Y):- 0.0
+unload(Y,X,O):- 0.0

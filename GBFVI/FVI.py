@@ -356,6 +356,7 @@ class FVI(object):
                 bellman_error = abs((immediate_reward + discount_factor * value_of_next_state) - value_of_current_state)  # |R(S) + gamma*V_hat(S') - V_hat(S)|
                 bellman_errors.append(bellman_error)
         return (sum(bellman_errors)/float(len(bellman_errors))) #return average or max, right now average
+        #return (max(bellman_errors))
         
 
     def AVI(self):

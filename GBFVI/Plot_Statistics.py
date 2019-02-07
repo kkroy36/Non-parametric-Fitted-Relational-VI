@@ -19,7 +19,7 @@ def diff(l1,l2):
 path="C:/Users/sxd170431/Desktop/Work/Projects/Relational_RL/Results/"
 gpath="C:/Users/sxd170431/Desktop/Work/Projects/Relational_RL/Plots/"
 simulator="logistics"
-runs=5
+runs=20
 policy=0.9
 trees=3
 loss="LS"

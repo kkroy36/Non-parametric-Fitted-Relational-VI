@@ -14,9 +14,9 @@ import numpy as np
 """Settings for experiments batch_size=10, no_of_iterations=50, trees=1 (baseline), 3, 5, no_of_runs=5 & 10"""
 """Sample path: C:\Users\sxd170431\Desktop\Work\Projects\Relational_RL\Results\logistics\Runs_1\Policy_0.9\trees_3\LS"""
 
-path="/home/kauroy/Desktop/Non-parametric-Fitted-Relational-VI-master/GBFVI/Results/"
-#path="C://Users//sxd170431//Desktop//Work//Projects//Relational_RL//Results//"
-no_of_runs=5
+#path="/home/kauroy/Desktop/Non-parametric-Fitted-Relational-VI-master/GBFVI/Results/"
+path="C://Users//sxd170431//Desktop//Work//Projects//Relational_RL//Results//"
+no_of_runs=20
 policy=0.9
 no_of_state_actions_average=50
 test_trajectory_length=50
@@ -35,7 +35,7 @@ np.set_printoptions(threshold=np.inf)
 
 for run in range(0,no_of_runs):
   print "Beginning run no", run  
-  model=FVI(simulator="logistics",trees=3,batch_size=10,number_of_iterations=50, path=path,runs=no_of_runs, policy=policy,run_latest=run,loss="LS",test_trajectory_length=test_trajectory_length) #logistics default
+  model=FVI(simulator="logistics",trees=3,batch_size=10,number_of_iterations=100, path=path,runs=no_of_runs, policy=policy,run_latest=run,loss="LS",test_trajectory_length=test_trajectory_length) #logistics default
   """Statistics for a single run"""
   all_run_bellman_error.append(model.bellman_error)
   all_run_total_rewards.append(model.total_rewards)
@@ -55,8 +55,8 @@ for run in range(0,no_of_runs):
   #FVI(simulator="50chain",batch_size=2,trees=1,loss="LS",number_of_iterations=20) #for simple domains 10 trees not required
   #FVI(simulator="net_admin",trees=1,batch_size=6,number_of_iterations=1) #network administrator domain
   
-resultpath=path+model.simulator+"/Runs_"+str(no_of_runs)+"/Policy_"+str(policy)+"/trees_"+str(model.trees)+"/"+model.loss+"/"
-#resultpath=path+model.simulator+"//Runs_"+str(no_of_runs)+"//Policy_"+str(policy)+"//trees_"+str(model.trees)+"//"+model.loss+"//"
+#resultpath=path+model.simulator+"/Runs_"+str(no_of_runs)+"/Policy_"+str(policy)+"/trees_"+str(model.trees)+"/"+model.loss+"/"
+resultpath=path+model.simulator+"//Runs_"+str(no_of_runs)+"//Policy_"+str(policy)+"//trees_"+str(model.trees)+"//"+model.loss+"//"
 """Average the results across each run"""
 all_run_total_rewards_avg = np.mean(all_run_total_rewards,axis=0)
 all_run_bellman_error_avg=np.mean(all_run_bellman_error,axis=0)
