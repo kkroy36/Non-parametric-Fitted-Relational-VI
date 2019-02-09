@@ -1,4 +1,5 @@
 from box_world import Logistics
+from shutil import rmtree
 import os
 from math import sqrt
 #from wumpus import Wumpus
@@ -30,6 +31,7 @@ class FVI(object):
         self.state_number = 1
         self.current_run=run_latest
         self.test_trajectory_no=test_trajectory_length
+        self.burn_in_no_of_traj=20
         """These are the statistics that needs to be averaged accross runs"""
         self.bellman_error_avg=[]
         self.bellman_error_max = []
@@ -97,12 +99,12 @@ class FVI(object):
                 #print 'current_state,current_action.next_state,next_state_action',state,state_action,next_state,next_state_action
                 facts = list(next_state)
                 examples = [next_state_action+" "+str(0.0)]
-                value_of_next_state = 0.0
+                value_of_next_state = 0.98
                 try:
                     self.model.infer(facts, examples)
                     value_of_next_state = self.model.testExamples[next_state_action.split('(')[0]][next_state_action]
                 except:
-                    value_of_next_state = 0.0
+                    value_of_next_state = 0.98
                 value_of_state = immediate_reward + discount_factor * value_of_next_state  # V(S) = R(S) + gamma*V_hat(S')
                 key = (state_number, tuple(state[:-1]))
                 total += value_of_state
@@ -128,6 +130,8 @@ class FVI(object):
                 key = (current_state_number, tuple(current_state[:-1]))
                 #print 'current_action,state',current_action,key
                 values[current_action][key] = value_of_state
+                #print "value of state",value_of_state,i 
+                #raw_input()
             else:
                 next_state_number = reversed_trajectory[i-1][0]
                 next_state = reversed_trajectory[i-1][1][:-1]
@@ -140,6 +144,8 @@ class FVI(object):
                 key = (current_state_number, tuple(current_state[:-1]))
                 #print 'current_action,state',current_action,key
                 values[current_action][key] = value_of_state
+                #print "value of state",value_of_state,i 
+                #raw_input()
         #print "Length of trajectory", len(trajectory)
         #raw_input()
         """Calculate the infered Q-values from the Fitted Value Iteration model, also calculate the error"""                                 
@@ -154,17 +160,19 @@ class FVI(object):
             #print 'current_state,current_action.next_state,next_state_action',state,state_action,next_state,next_state_action
             facts = list(next_state)
             examples = [next_state_action+" "+str(0.0)]
-            value_of_next_state = 0.0
+            value_of_next_state = 0.98
             try:
                 self.model.infer(facts, examples)
                 value_of_next_state = self.model.testExamples[next_state_action.split('(')[0]][next_state_action]
             except:
-                value_of_next_state = 0.0
+                value_of_next_state = 0.98
             infered_state_value = immediate_reward + discount_factor * value_of_next_state  # V(S) = R(S) + gamma*V_hat(S')
             key = (state_number, tuple(state[:-1]))
             #print 'current_action,state,next_state_action,next_state',state,state_action, next_state,next_state_action
             #raw_input()
             true_state_value=values[state_action][key]
+            #print "****************",true_state_value,i
+            #raw_input()
             
             """Q(s,a) for all state action pairs in the test trajectory"""
             self.true_state_action_val.append(true_state_value)
@@ -217,6 +225,7 @@ class FVI(object):
         '''
         
         """Creates separate run directories in the destination folder to store results from each run"""
+        
         dirName=self.resultpath+"//Run"+str(self.current_run)
         if not os.path.exists(self.resultpath+"//Run"+str(self.current_run)):
            os.makedirs(dirName)
@@ -229,7 +238,7 @@ class FVI(object):
         facts, examples, bk, reward_function = [], [], [], []
         i = 0
         values = {}
-        while i < 50:  # at least ten iteration burn in time
+        while i < self.burn_in_no_of_traj:  # at least ten iteration burn in time
             if self.simulator == "logistics":
                 state = Logistics(number=self.state_number, start=True)
                 if not bk:
@@ -351,12 +360,12 @@ class FVI(object):
                     self.model.infer(list(state),[state_action+" "+str(0.0)])
                     value_of_current_state = self.model.testExamples[state_action.split('(')[0]][state_action]
                 except:
-                    value_of_current_state = 0.0
+                    value_of_current_state = 0.98
                 try:
                     self.model.infer(facts, examples)
                     value_of_next_state = self.model.testExamples[next_state_action.split('(')[0]][next_state_action]
                 except:
-                    value_of_next_state = 0.0
+                    value_of_next_state = 0.98
                 bellman_error = abs((immediate_reward + discount_factor * value_of_next_state) - value_of_current_state)  # |R(S) + gamma*V_hat(S') - V_hat(S)|
                 bellman_errors.append(bellman_error)
         if aggregate == 'avg':
@@ -403,7 +412,7 @@ class FVI(object):
                 inferred_value = self.model.testExamples[key.split('(')[
                     0]][key]
             except:
-                inferred_value = 0.0
+                inferred_value = 0.98
             state_action_value = temp_values[key]
             for state in state_action_value:
                 value = state_action_value[state]
@@ -420,7 +429,7 @@ class FVI(object):
                 inferred_value = self.model.testExamples[key.split('(')[
                     0]][key]
             except:
-                inferred_value = 0.0
+                inferred_value = 0.98
             state_action_value = values[key]
             for state in state_action_value:
                 value = state_action_value[state]

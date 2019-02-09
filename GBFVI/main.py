@@ -1,6 +1,7 @@
 from FVI import FVI
 import sys
 import numpy as np
+from shutil import rmtree
 '''
    loss can be LS,LAD or Huber
    transfer can be 0 or 1
@@ -14,8 +15,8 @@ import numpy as np
 """Settings for experiments batch_size=10, no_of_iterations=50, trees=1 (baseline), 3, 5, no_of_runs=5 & 10"""
 """Sample path: C:\Users\sxd170431\Desktop\Work\Projects\Relational_RL\Results\logistics\Runs_1\Policy_0.9\trees_3\LS"""
 
-#path="C://Users//sxd170431//Desktop//Work//Projects//Relational_RL//Results//"
-path="D://Grad Studies//Research//Relational RL//Results//"
+path="C://Users//sxd170431//Desktop//Work//Projects//Relational_RL//Results//"
+#path="D://Grad Studies//Research//Relational RL//Results//"
 #path="/home/kauroy/Desktop/Non-parametric-Fitted-Relational-VI-master/GBFVI/Results/"
 no_of_runs=5
 policy=0.9
@@ -37,12 +38,17 @@ all_run_rmse_train = []
 all_run_rmse_test = []
 np.set_printoptions(threshold=np.inf)
 
+rmtree(path)
+
 for run in range(0,no_of_runs):
   print "Beginning run no", run  
   model=FVI(simulator="logistics",trees=3,batch_size=10,number_of_iterations=50, path=path,runs=no_of_runs, policy=policy,run_latest=run,loss="LS",test_trajectory_length=test_trajectory_length) #logistics default
+  
+  """Path where the results will be saved"""
   #resultpath=path+model.simulator+"/Runs_"+str(no_of_runs)+"/Policy_"+str(policy)+"/trees_"+str(model.trees)+"/"+model.loss+"/"
   resultpath=path+model.simulator+"//Runs_"+str(no_of_runs)+"//Policy_"+str(policy)+"//trees_"+str(model.trees)+"//"+model.loss+"//"
-  print resultpath
+  ind_runpath=path+model.simulator+"//Runs_"+str(no_of_runs)+"//Policy_"+str(policy)+"//trees_"+str(model.trees)+"//"+model.loss+"//"+"Run"+str(run)+"//"
+  
   """Statistics for a single run"""
   all_run_bellman_error_mean.append(model.bellman_error_avg)
   all_run_bellman_error_max.append(model.bellman_error_max)
@@ -64,11 +70,9 @@ for run in range(0,no_of_runs):
   #FVI(simulator="blackjack",transfer=1,number_of_iterations=100) #no facts in 1 trajectory => (batch_size=10)
   #FVI(simulator="50chain",batch_size=2,trees=1,loss="LS",number_of_iterations=20) #for simple domains 10 trees not required
   #FVI(simulator="net_admin",trees=1,batch_size=6,number_of_iterations=1) #network administrator domain
-  np.savetxt(resultpath+'rmse_train_error.txt',model.training_rmse)
-  np.savetxt(resultpath+'rmse_test_error.txt',model.testing_rmse)
+  np.savetxt(ind_runpath+'rmse_train_error.txt',model.training_rmse)
+  np.savetxt(ind_runpath+'rmse_test_error.txt',model.testing_rmse)
   
-#resultpath=path+model.simulator+"/Runs_"+str(no_of_runs)+"/Policy_"+str(policy)+"/trees_"+str(model.trees)+"/"+model.loss+"/"
-resultpath=path+model.simulator+"//Runs_"+str(no_of_runs)+"//Policy_"+str(policy)+"//trees_"+str(model.trees)+"//"+model.loss+"//"
 """Average the results across each run"""
 #all_run_total_rewards_avg = np.mean(all_run_total_rewards,axis=0)
 all_run_bellman_error_mean_avg=np.mean(all_run_bellman_error_mean,axis=0)
