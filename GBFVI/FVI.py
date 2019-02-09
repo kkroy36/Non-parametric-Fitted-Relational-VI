@@ -33,7 +33,7 @@ class FVI(object):
         """These are the statistics that needs to be averaged accross runs"""
         self.bellman_error_avg=[]
         self.bellman_error_max = []
-        self.total_rewards = []
+        #self.total_rewards = []
         """These contain true and infered Q(s,a) values for every state action pair in the test trajectory"""
         self.true_state_action_val=[]
         self.inf_state_action_val=[]
@@ -58,7 +58,7 @@ class FVI(object):
         '''
         reversed_trajectory = trajectory[::-1]
         number_of_transitions = len(reversed_trajectory)
-        immediate_reward = -1
+        immediate_reward = 0
         total = 0.0
         if not AVI:  # if not AVI i.e. for first iteration perform value iteration for initial values
             # while True:
@@ -115,7 +115,7 @@ class FVI(object):
         '''
         reversed_trajectory = trajectory[::-1]
         number_of_transitions = len(reversed_trajectory)
-        immediate_reward = -1
+        immediate_reward = 0
         
         """Calculate the original Q-values from Bellman backup equation"""
         for i in range(number_of_transitions):
@@ -229,7 +229,7 @@ class FVI(object):
         facts, examples, bk, reward_function = [], [], [], []
         i = 0
         values = {}
-        while i < 5:  # at least ten iteration burn in time
+        while i < 50:  # at least ten iteration burn in time
             if self.simulator == "logistics":
                 state = Logistics(number=self.state_number, start=True)
                 if not bk:
@@ -331,7 +331,7 @@ class FVI(object):
     def compute_bellman_error(self, trajectories,aggregate='avg'):
         '''computes max bellman error for every iteration'''
         bellman_errors = []
-        immediate_reward = -1
+        immediate_reward = 0
         discount_factor = 0.99
         for trajectory in trajectories:
             number_of_transitions = len(trajectory)
@@ -363,7 +363,54 @@ class FVI(object):
             return (sum(bellman_errors)/float(len(bellman_errors))) #return average or max, right now average
         elif aggregate == 'max':
             return (max(bellman_errors))
-
+        
+    def compute_train_error(self,values,trajectory, discount_factor=0.99, goal_value=1.0):
+        
+        temp_values=deepcopy(values)
+        reversed_trajectory = trajectory[::-1]
+        number_of_transitions = len(reversed_trajectory)
+        immediate_reward = 0
+        
+        """Calculate the original Q-values from Bellman backup equation"""
+        for i in range(number_of_transitions):
+            if i == 0:
+                next_state_value = goal_value
+                current_state_number = reversed_trajectory[i][0]
+                current_state = reversed_trajectory[i][1][:-1]
+                current_action = reversed_trajectory[i][1][-1]
+                value_of_state = immediate_reward + discount_factor * next_state_value  # V(S) = R(S) + gamma*goal_value
+                key = (current_state_number, tuple(current_state[:-1]))
+                #print 'current_action,state',current_action,key
+                temp_values[current_action][key] = value_of_state
+            else:
+                next_state_number = reversed_trajectory[i-1][0]
+                next_state = reversed_trajectory[i-1][1][:-1]
+                next_state_action = reversed_trajectory[i-1][1][-1]
+                next_state_value = temp_values[next_state_action][(next_state_number, tuple(next_state[:-1]))]
+                current_state_number = reversed_trajectory[i][0]
+                current_state = reversed_trajectory[i][1][:-1]
+                current_action = reversed_trajectory[i][1][-1]
+                value_of_state = immediate_reward + discount_factor*next_state_value #V(S) = R(S) + gamma*V(S')
+                key = (current_state_number, tuple(current_state[:-1]))
+                #print 'current_action,state',current_action,key
+                temp_values[current_action][key] = value_of_state
+                
+        '''computers test error during training'''
+        test_errors = []
+        for key in temp_values:
+            inferred_value = 0.0
+            try:
+                inferred_value = self.model.testExamples[key.split('(')[
+                    0]][key]
+            except:
+                inferred_value = 0.0
+            state_action_value = temp_values[key]
+            for state in state_action_value:
+                value = state_action_value[state]
+                test_errors.append(abs(value-inferred_value))
+        squared_test_errors = [item**2 for item in test_errors]
+        return (sqrt(sum(squared_test_errors)/float(len(test_errors))))
+    
     def compute_test_error(self,values):
         '''computers test error during training'''
         test_errors = []
@@ -384,7 +431,7 @@ class FVI(object):
     def AVI(self):
         #values = {}
         for i in range(self.number_of_iterations):
-            training_rmses = []
+            training_rmses_per_traj = []
             trajectories = []
             totals = []
             j = 0
@@ -470,14 +517,16 @@ class FVI(object):
                     if within_time:
                         self.init_values(values, trajectory)
                         if i == 0:
-                            totals.append(self.compute_value_of_trajectory(
-                                values, trajectory, AVI=True))
+                            #totals.append(self.compute_value_of_trajectory(
+                            #    values, trajectory, AVI=True))
+                            self.compute_value_of_trajectory(values, trajectory, AVI=True)
                         else:
                             # perform computation using fitted value iteration
-                            totals.append(self.compute_value_of_trajectory(
-                                values, trajectory, AVI=True))
+                            #totals.append(self.compute_value_of_trajectory(
+                            #    values, trajectory, AVI=True))
+                            self.compute_value_of_trajectory(values, trajectory, AVI=True)
+                            
                         self.state_number += 1
-                        print "The value function is", values
                         for key in values:
                             if values[key]:
                                 examples_string = key
@@ -486,13 +535,14 @@ class FVI(object):
                                     examples_string += " " + \
                                         str(values[key][state_key])
                                 examples.append(examples_string)
-                        rmse_train = self.compute_test_error(values)
+                        rmse_train = self.compute_train_error(values,trajectory)
+                        training_rmses_per_traj.append(rmse_train)
                         j += 1
-            training_rmses.append(rmse_train)
-            self.training_rmse.append(sum(training_rmses)/float(len(training_rmses)))
-            with open("average_cumulative_rewards.txt","a") as fp:
-                self.total_rewards.append(sum(totals)/float(len(totals)))
-                fp.write(str(sum(totals)/float(len(totals)))+"\n")
+            #training_rmses.append(rmse_train)
+            self.training_rmse.append(sum(training_rmses_per_traj)/float(len(training_rmses_per_traj)))
+            #with open("average_cumulative_rewards.txt","a") as fp:
+            #    self.total_rewards.append(sum(totals)/float(len(totals)))
+            #    fp.write(str(sum(totals)/float(len(totals)))+"\n")
             # self.model.infer(facts,examples)
             fitted_values = self.model.infer(facts, examples)
             bellman_error = self.compute_bellman_error(trajectories,aggregate='avg')            
@@ -514,6 +564,7 @@ class FVI(object):
             self.model.learn(facts, examples, bk)
         
         i = 0 
+        testing_rmse_per_traj=[]
         while i < self.test_trajectory_no: #test trajectories for logistics
             if self.simulator == "logistics": # Add other domains specific to testing
                 state = Logistics(number=self.state_number, start=True)
@@ -541,6 +592,7 @@ class FVI(object):
                     self.init_values(values, trajectory)
                     self.compute_value_of_test_trajectory(values, trajectory, AVI=True)
                     rmse_test = self.compute_test_error(values)
-                    self.testing_rmse.append(rmse_test)
+                    testing_rmse_per_traj.append(rmse_test)
                     self.state_number += 1
             i += 1
+        self.testing_rmse.append(sum(testing_rmse_per_traj)/float(len(testing_rmse_per_traj)))

@@ -14,9 +14,10 @@ import numpy as np
 """Settings for experiments batch_size=10, no_of_iterations=50, trees=1 (baseline), 3, 5, no_of_runs=5 & 10"""
 """Sample path: C:\Users\sxd170431\Desktop\Work\Projects\Relational_RL\Results\logistics\Runs_1\Policy_0.9\trees_3\LS"""
 
+#path="C://Users//sxd170431//Desktop//Work//Projects//Relational_RL//Results//"
+path="D://Grad Studies//Research//Relational RL//Results//"
 #path="/home/kauroy/Desktop/Non-parametric-Fitted-Relational-VI-master/GBFVI/Results/"
-path="/home/kauroy/Desktop/Non-parametric-Fitted-Relational-VI-master/GBFVI/Results/"
-no_of_runs=20
+no_of_runs=5
 policy=0.9
 no_of_state_actions_average=50
 test_trajectory_length=50
@@ -31,19 +32,22 @@ all_run_infered_values=[]
 all_run_test_error_start=[]
 all_run_true_values_start=[]
 all_run_infered_values_start=[]
-all_run_total_rewards = []
+#all_run_total_rewards = []
 all_run_rmse_train = []
 all_run_rmse_test = []
 np.set_printoptions(threshold=np.inf)
 
 for run in range(0,no_of_runs):
   print "Beginning run no", run  
-  model=FVI(simulator="logistics",trees=1,batch_size=1,number_of_iterations=5, path=path,runs=no_of_runs, policy=policy,run_latest=run,loss="LS",test_trajectory_length=test_trajectory_length) #logistics default
-  resultpath=path+model.simulator+"/Runs_"+str(no_of_runs)+"/Policy_"+str(policy)+"/trees_"+str(model.trees)+"/"+model.loss+"/"
+  model=FVI(simulator="logistics",trees=3,batch_size=10,number_of_iterations=50, path=path,runs=no_of_runs, policy=policy,run_latest=run,loss="LS",test_trajectory_length=test_trajectory_length) #logistics default
+  #resultpath=path+model.simulator+"/Runs_"+str(no_of_runs)+"/Policy_"+str(policy)+"/trees_"+str(model.trees)+"/"+model.loss+"/"
+  resultpath=path+model.simulator+"//Runs_"+str(no_of_runs)+"//Policy_"+str(policy)+"//trees_"+str(model.trees)+"//"+model.loss+"//"
+  print resultpath
   """Statistics for a single run"""
   all_run_bellman_error_mean.append(model.bellman_error_avg)
   all_run_bellman_error_max.append(model.bellman_error_max)
-  all_run_total_rewards.append(model.total_rewards)
+  #all_run_total_rewards.append(model.total_rewards)
+  all_run_rmse_train.append(model.training_rmse)
   all_run_rmse_test.append(model.testing_rmse)
   """Averages over first 50 (s,a) pairs. This variable can be changes"""
   all_run_test_error.append(model.test_error_state_action[0:no_of_state_actions_average])
@@ -60,12 +64,13 @@ for run in range(0,no_of_runs):
   #FVI(simulator="blackjack",transfer=1,number_of_iterations=100) #no facts in 1 trajectory => (batch_size=10)
   #FVI(simulator="50chain",batch_size=2,trees=1,loss="LS",number_of_iterations=20) #for simple domains 10 trees not required
   #FVI(simulator="net_admin",trees=1,batch_size=6,number_of_iterations=1) #network administrator domain
-  np.savetxt(resultpath+'rmse_train_all_iterations.txt',model.training_rmse)
+  np.savetxt(resultpath+'rmse_train_error.txt',model.training_rmse)
+  np.savetxt(resultpath+'rmse_test_error.txt',model.testing_rmse)
   
-resultpath=path+model.simulator+"/Runs_"+str(no_of_runs)+"/Policy_"+str(policy)+"/trees_"+str(model.trees)+"/"+model.loss+"/"
-#resultpath=path+model.simulator+"//Runs_"+str(no_of_runs)+"//Policy_"+str(policy)+"//trees_"+str(model.trees)+"//"+model.loss+"//"
+#resultpath=path+model.simulator+"/Runs_"+str(no_of_runs)+"/Policy_"+str(policy)+"/trees_"+str(model.trees)+"/"+model.loss+"/"
+resultpath=path+model.simulator+"//Runs_"+str(no_of_runs)+"//Policy_"+str(policy)+"//trees_"+str(model.trees)+"//"+model.loss+"//"
 """Average the results across each run"""
-all_run_total_rewards_avg = np.mean(all_run_total_rewards,axis=0)
+#all_run_total_rewards_avg = np.mean(all_run_total_rewards,axis=0)
 all_run_bellman_error_mean_avg=np.mean(all_run_bellman_error_mean,axis=0)
 all_run_bellman_error_max_avg = np.mean(all_run_bellman_error_max,axis=0)
 all_run_test_error_avg=np.mean(all_run_test_error,axis=0)
@@ -75,9 +80,11 @@ all_run_test_error_start_avg=np.mean(all_run_test_error_start,axis=0)
 all_run_true_values_start_avg=np.mean(all_run_true_values_start,axis=0)
 all_run_infered_values_start_avg=np.mean(all_run_infered_values_start,axis=0)
 all_run_rmse_test_avg = np.mean(all_run_rmse_test,axis=0)
+all_run_rmse_train_avg = np.mean(all_run_rmse_train,axis=0)
 
+#print "I AM BEGINNNING"
 """Write all the statistics to a text file"""
-np.savetxt(resultpath+'avg_total_rewards.txt',all_run_total_rewards_avg)
+#np.savetxt(resultpath+'avg_total_rewards.txt',all_run_total_rewards_avg)
 np.savetxt(resultpath+'avg_bellman_error_mean.txt',all_run_bellman_error_mean_avg)
 np.savetxt(resultpath+'avg_bellman_error_max.txt',all_run_bellman_error_max_avg)
 np.savetxt(resultpath+'avg_test_error.txt',all_run_test_error_avg)
@@ -87,6 +94,8 @@ np.savetxt(resultpath+'avg_test_error_start.txt',all_run_test_error_start_avg)
 np.savetxt(resultpath+'avg_true_val_start.txt',all_run_true_values_start_avg)
 np.savetxt(resultpath+'avg_inf_val_start.txt',all_run_infered_values_start_avg)
 np.savetxt(resultpath+'avg_rmse_test.txt',all_run_rmse_test_avg)
+np.savetxt(resultpath+'avg_rmse_train.txt',all_run_rmse_train_avg)
+print "The test rmse across all runs", all_run_rmse_test_avg
 
 
 

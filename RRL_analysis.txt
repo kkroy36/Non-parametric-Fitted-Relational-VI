@@ -1,0 +1,40 @@
+Fitted Value iteration:
+Here, in every boosting iteration, a set of trees is learnt which represents the value function
+logistics domain:
+
+Example of a test trajectory:
+
+[(1, ['bOn(s1,b1,t1)', 'bOn(s1,b2,t1)', 'bOn(s1,b3,t1)', 'bOn(s1,b4,t1)', 'tIn(s1,t1,c1)', 'tIn(s1,t2,c1)', 'tIn(s1,t3,c1)', 'move(s1,t1,c3)']), (2, ['tIn(s2,t2,c1)', 'tIn(s2,t3,c1)', 'bOn(s2,b1,t1)', 'bOn(s2,b2,t1)', 'bOn(s2,b3,t1)', 'bOn(s2,b4,t1)', 'tIn(s2,t1,c3)', 'destination(s2,c3)', 'unload(s2,b1,t1)'])]
+(Need to ask Kaushik about the goal state)
+1. The code generates 5 trajectories in the beginning for learning an approximate value function during the burn in period from where to start.
+	a. Initializes the value function table  values={move(s1,t1,c3): ,unload(s2,b1,t1): }. The values dictionary contains an entry for every action in the ground states.
+	b. Value of the trajectories are created by the Bellman's backup equation.(Need to ask Kaushik about this once.) Sample values of states,actions are calculated and stored
+	c. key = (current_state_number, tuple(current_state[:-1]))
+       values[current_action][key] = value_of_state
+	   Structure of values:  values{move(s1,t1,c3):{(1,'bOn(s1,b1,t1)', 'bOn(s1,b2,t1)', 'bOn(s1,b3,t1)', 'bOn(s1,b4,t1)', 'tIn(s1,t1,c1)', 'tIn(s1,t2,c1)', 'tIn(s1,t3,c1)'): Q(s,a)}} This is how the ground states and actions are stored in dict.
+	d. For each target, learn given umber of trees (mentioned by user).
+
+2. Once these initial models have been learnt (initial model), the original value iteration begins.  (self.AVI())
+
+3. def AVI(self):  (in this function)
+   a. No. of trajectories are generated as specified in the batch_size parameter
+   b. values dictionary are initialized and their values are calculated. But, now value of the successor states are inferred from the model already  build in step 1. Next, the model is learnt over that many trees.
+   
+Experiments on RRL:
+
+Domains: 
+
+Logistics:
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+	
