@@ -194,7 +194,7 @@ class Logistics(object):  # represents a world state
             return False
         for city in self.cities:
             if city.get_number() == 3 and len(city.unloaded_boxes) > 0:
-                print (city.unloaded_boxes)
+                #print (city.unloaded_boxes)
                 return True
         return False
 
@@ -229,7 +229,7 @@ class Logistics(object):  # represents a world state
     def add_city(self, city):
         if str(city) not in [str(c) for c in self.cities]:
             self.cities.append(city)
-            print ("new city added")
+            #print ("new city added")
 
     def execute_action(self, action):
         print ('='*80)
@@ -244,11 +244,10 @@ class Logistics(object):  # represents a world state
             for city in self.cities:
                 move_truck = city.get_truck(move_truck_number)
                 if not move_truck:
-                    print ("truck in not city", city)
+                    #print ("truck in not city", city)
                     continue
                 if str(city) == str(destination_city):
-                    print ("source and destination same",
-                           city, destination_city)
+                    #print ("source and destination same",city, destination_city)
                     return self
                 city.remove_truck(move_truck)
                 destination_city.add_truck(move_truck)
@@ -268,7 +267,7 @@ class Logistics(object):  # represents a world state
                 if not box:
                     print ("box not on unload truck: ", truck.get_boxes())
                     return self
-                print ("before unloading: ", unload_truck.get_boxes())
+                #print ("before unloading: ", unload_truck.get_boxes())
                 unload_truck.remove_box(box)
                 city.add_unloaded_box(box)
                 break
@@ -286,7 +285,7 @@ class Logistics(object):  # represents a world state
                 box = city.get_unloaded_box(box_number)
                 if not box:
                     return self
-                print ("before loading: ", load_truck.get_boxes())
+                #print ("before loading: ", load_truck.get_boxes())
                 load_truck.add_box(box)
                 city.remove_unloaded_box(box)
                 break
@@ -344,9 +343,10 @@ class Logistics(object):  # represents a world state
         return (False)
             
 
-    def execute_random_action(self, N=3):
+    def execute_random_action(self, N=3,actn_dist=0.5):
         self.get_all_actions()
-        if random() < 0.9:
+        print "The exploitation distribution is",actn_dist
+        if random() < actn_dist:
             policy = self.get_policy(self.all_actions,self.get_state_facts(),self.state_number)
             #random_actions = []
             #action_potentials = []

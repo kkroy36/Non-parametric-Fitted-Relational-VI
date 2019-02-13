@@ -23,6 +23,7 @@ class GradientBoosting(object):
         self.targets = targets
 
     def learn(self,facts,examples,bk):
+        self.trees = {}
         for target in self.targets:
             data = Utils.setTrainingData(target=target,facts=facts,examples=examples,bk=bk,regression=self.regression,sampling_rate = self.sampling_rate)
             trees = []
@@ -42,6 +43,13 @@ class GradientBoosting(object):
                     for clause in tree:
                         print (clause)
                     counter += 1
+                    
+    def get_tree_clauses(self,tree):
+        '''prints clauses in the input tree'''
+        clauses = []
+        for clause in tree:
+            clauses.append(clause)
+        return (clauses)
 
     def infer(self,facts,examples):
         self.testExamples = {}
@@ -50,3 +58,11 @@ class GradientBoosting(object):
             Boosting.performInference(data,self.trees[target])
             self.testExamples[target] = data.examples
             #print (data.examples)
+            
+#    def infer_latest(self,facts,examples,trees):
+#        self.testExamples = {}
+#        for target in self.targets:
+#            data = Utils.setTestData(target=target,facts=facts,examples=examples,regression=self.regression)
+#            Boosting.performInference(data,trees[target])
+#            self.testExamples[target] = data.examples
+#            #print (data.examples)

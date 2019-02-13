@@ -1,3 +1,4 @@
+from __future__ import division
 from box_world import Logistics
 from shutil import rmtree
 import os
@@ -26,12 +27,21 @@ class FVI(object):
         self.batch_size = batch_size
         self.loss = loss
         self.trees = trees
+        """This keeps track of the latest set of trees for each action"""
+        self.trees_latest={}
         self.number_of_iterations = number_of_iterations
         self.model = None
         self.state_number = 1
         self.current_run=run_latest
         self.test_trajectory_no=test_trajectory_length
-        self.burn_in_no_of_traj=20
+        self.burn_in_no_of_traj=10
+        self.actions_all=['move','unload','load']
+        
+        """Exploration and exploitation probabilities for traina nd test trajectories"""
+        self.exploit=policy
+        self.exploration=1-self.exploit
+        self.test_exploit=0.9
+        
         """These are the statistics that needs to be averaged accross runs"""
         self.bellman_error_avg=[]
         self.bellman_error_max = []
@@ -99,12 +109,14 @@ class FVI(object):
                 #print 'current_state,current_action.next_state,next_state_action',state,state_action,next_state,next_state_action
                 facts = list(next_state)
                 examples = [next_state_action+" "+str(0.0)]
-                value_of_next_state = 0.98
+                value_of_next_state = 0
                 try:
                     self.model.infer(facts, examples)
                     value_of_next_state = self.model.testExamples[next_state_action.split('(')[0]][next_state_action]
                 except:
-                    value_of_next_state = 0.98
+                    value_of_next_state = 0
+                    self.print_tree(self.model)
+                    raw_input("compute_value_of_trajectory")
                 value_of_state = immediate_reward + discount_factor * value_of_next_state  # V(S) = R(S) + gamma*V_hat(S')
                 key = (state_number, tuple(state[:-1]))
                 total += value_of_state
@@ -160,12 +172,14 @@ class FVI(object):
             #print 'current_state,current_action.next_state,next_state_action',state,state_action,next_state,next_state_action
             facts = list(next_state)
             examples = [next_state_action+" "+str(0.0)]
-            value_of_next_state = 0.98
+            value_of_next_state = 0
             try:
                 self.model.infer(facts, examples)
                 value_of_next_state = self.model.testExamples[next_state_action.split('(')[0]][next_state_action]
             except:
-                value_of_next_state = 0.98
+                value_of_next_state = 0
+                self.print_tree(self.model)
+                raw_input("compute_value_of_test_trajectory")
             infered_state_value = immediate_reward + discount_factor * value_of_next_state  # V(S) = R(S) + gamma*V_hat(S')
             key = (state_number, tuple(state[:-1]))
             #print 'current_action,state,next_state_action,next_state',state,state_action, next_state,next_state_action
@@ -182,7 +196,6 @@ class FVI(object):
             """Q(s,a) for the first state action pair in the test trajectory"""
             if (i==0):
                
-               print "The value of i is",i 
                self.true_start_state_action_val.append(true_state_value)
                self.inf_start_state_action_val.append(infered_state_value)
                self.test_start_error_state_action.append(abs(infered_state_value - true_state_value))
@@ -203,6 +216,14 @@ class FVI(object):
     def get_targets(self, examples):
         '''returns the targets'''
         return list(set([item.split('(')[0] for item in examples]))
+    
+    """prints the sets of all RRTs for all the targets"""    
+    def print_tree(self,model):
+        
+        for item in self.actions_all:
+            trees=model.trees[item]
+            for tree in trees:
+                print model.get_tree_clauses(tree)    
 
     def init_values(self, values, trajectory):
         '''initializes 2D values dictionary
@@ -283,7 +304,7 @@ class FVI(object):
                         f.write("="*80+"\n")
                     s_number = state.state_number
                     s_facts = state.get_state_facts()
-                    state_action_pair = state.execute_random_action()
+                    state_action_pair = state.execute_random_action(actn_dist=self.exploit)
                     state = state_action_pair[0]  # state
                     # action and remove period
                     action = state_action_pair[1][0][:-1]
@@ -333,6 +354,11 @@ class FVI(object):
         reg.setTargets(targets)
         reg.learn(facts, examples, bk)
         self.model = reg
+        self.trees_latest=deepcopy(self.model.trees)
+        
+        self.print_tree(self.model)
+      
+        raw_input("BURN IN PERIOD FINISHED")
         self.AVI()
         if self.transfer:
             self.AVI()
@@ -360,12 +386,16 @@ class FVI(object):
                     self.model.infer(list(state),[state_action+" "+str(0.0)])
                     value_of_current_state = self.model.testExamples[state_action.split('(')[0]][state_action]
                 except:
-                    value_of_current_state = 0.98
+                    value_of_current_state = 0
+                    self.print_tree(self.model)
+                    raw_input("compute_bellman_error")
                 try:
                     self.model.infer(facts, examples)
                     value_of_next_state = self.model.testExamples[next_state_action.split('(')[0]][next_state_action]
                 except:
-                    value_of_next_state = 0.98
+                    value_of_next_state = 0
+                    self.print_tree(self.model)
+                    raw_input("compute_bellman_error")
                 bellman_error = abs((immediate_reward + discount_factor * value_of_next_state) - value_of_current_state)  # |R(S) + gamma*V_hat(S') - V_hat(S)|
                 bellman_errors.append(bellman_error)
         if aggregate == 'avg':
@@ -380,6 +410,9 @@ class FVI(object):
         number_of_transitions = len(reversed_trajectory)
         immediate_reward = 0
         
+        #self.print_tree(self.model)
+        train_errors = []
+        
         """Calculate the original Q-values from Bellman backup equation"""
         for i in range(number_of_transitions):
             if i == 0:
@@ -391,6 +424,18 @@ class FVI(object):
                 key = (current_state_number, tuple(current_state[:-1]))
                 #print 'current_action,state',current_action,key
                 temp_values[current_action][key] = value_of_state
+                facts = list(current_state)
+                examples = [current_action+" "+str(0.0)]
+                inferred_value = 0.0
+                try:
+                    self.model.infer(facts, examples)
+                    #print self.model.testExamples
+                    inferred_value = self.model.testExamples[current_action.split('(')[0]][current_action]
+                except:
+                    inferred_value = 0
+                    self.print_tree(self.model)
+                    raw_input("compute_train_error"+str(i))
+                train_errors.append(abs(value_of_state - inferred_value))
             else:
                 next_state_number = reversed_trajectory[i-1][0]
                 next_state = reversed_trajectory[i-1][1][:-1]
@@ -403,39 +448,38 @@ class FVI(object):
                 key = (current_state_number, tuple(current_state[:-1]))
                 #print 'current_action,state',current_action,key
                 temp_values[current_action][key] = value_of_state
-                
-        '''computers test error during training'''
-        test_errors = []
-        for key in temp_values:
-            inferred_value = 0.0
-            try:
-                inferred_value = self.model.testExamples[key.split('(')[
-                    0]][key]
-            except:
-                inferred_value = 0.98
-            state_action_value = temp_values[key]
-            for state in state_action_value:
-                value = state_action_value[state]
-                test_errors.append(abs(value-inferred_value))
-        squared_test_errors = [item**2 for item in test_errors]
-        return (sqrt(sum(squared_test_errors)/float(len(test_errors))))
+                facts = list(current_state)
+                examples = [current_action+" "+str(0.0)]
+                inferred_value = 0.0
+                try:
+                    self.model.infer(facts, examples)
+                    self.print_tree(self.model)
+                    inferred_value = self.model.testExamples[current_action.split('(')[0]][current_action]
+                except:
+                    inferred_value = 0
+                    raw_input("compute_train_error"+str(i))
+                train_errors.append(abs(value_of_state - inferred_value))
+        squared_train_errors = [item**2 for item in train_errors]
+        return (sqrt(sum(squared_train_errors)/float(len(train_errors))))
     
-    def compute_test_error(self,values):
-        '''computers test error during training'''
-        test_errors = []
-        for key in values:
-            inferred_value = 0.0
-            try:
-                inferred_value = self.model.testExamples[key.split('(')[
-                    0]][key]
-            except:
-                inferred_value = 0.98
-            state_action_value = values[key]
-            for state in state_action_value:
-                value = state_action_value[state]
-                test_errors.append(abs(value-inferred_value))
-        squared_test_errors = [item**2 for item in test_errors]
-        return (sqrt(sum(squared_test_errors)/float(len(test_errors))))
+#    def compute_test_error(self,values):
+#        
+#        '''computers test error during training'''
+#        test_errors = []
+#        for key in values:
+#            inferred_value = 0.0
+#            try:
+#                inferred_value = self.model.testExamples[key.split('(')[
+#                    0]][key]
+#            except:
+#                inferred_value = 0
+#                raw_input("compute_test_error")
+#            state_action_value = values[key]
+#            for state in state_action_value:
+#                value = state_action_value[state]
+#                test_errors.append(abs(value-inferred_value))
+#        squared_test_errors = [item**2 for item in test_errors]
+#        return (sqrt(sum(squared_test_errors)/float(len(test_errors))))
 
     def AVI(self):
         #values = {}
@@ -446,6 +490,7 @@ class FVI(object):
             j = 0
             facts, examples, bk = [], [], []
             values = {}
+            print "The exploration policy is", self.exploration
             while j < self.batch_size:
                 if self.simulator == "logistics":
                     state = Logistics(number=self.state_number, start=True)
@@ -490,7 +535,7 @@ class FVI(object):
                         fp.write("="*80+"\n")
                         s_number = state.state_number
                         s_facts = state.get_state_facts()
-                        state_action_pair = state.execute_random_action()
+                        state_action_pair = state.execute_random_action(actn_dist=self.exploit)
                         state = state_action_pair[0]  # state
                         # action and remove period
                         action = state_action_pair[1][0][:-1]
@@ -544,9 +589,16 @@ class FVI(object):
                                     examples_string += " " + \
                                         str(values[key][state_key])
                                 examples.append(examples_string)
+                        print "The Value iteration no is", i        
                         rmse_train = self.compute_train_error(values,trajectory)
                         training_rmses_per_traj.append(rmse_train)
                         j += 1
+                        
+            """Decaying the exploitation probability"""
+            if (i!=0) and (i%10 ==0):
+               self.exploration=(self.exploration/1.5)
+               self.exploit=1-self.exploration
+               
             #training_rmses.append(rmse_train)
             self.training_rmse.append(sum(training_rmses_per_traj)/float(len(training_rmses_per_traj)))
             #with open("average_cumulative_rewards.txt","a") as fp:
@@ -571,7 +623,41 @@ class FVI(object):
             targets = self.get_targets(examples)
             self.model.setTargets(targets)
             self.model.learn(facts, examples, bk)
-        
+            
+            """Update the latest set of trees with the model that has been learnt in the current iteration"""
+            #for key in self.model.trees:
+            #    self.trees_latest[key]=deepcopy(self.model.trees[key])
+            print "The targets are", self.model.targets
+            
+            print "self.trees_latest before assignment"
+            print "************************************"
+            for item in self.actions_all:
+                trees=self.trees_latest[item]
+                for tree in trees:
+                    print self.model.get_tree_clauses(tree)
+            print "************************************"        
+            print"self.model.trees" 
+            
+            for target in self.actions_all:
+                #if ((not self.model.trees[target]) or (target not in self.model.trees)):
+                if target not in self.model.trees:    
+                   print (target)
+                   print (self.model.trees.keys()) 
+                   print "model.trees does not have all the targets" 
+                   self.model.trees[target]= deepcopy(self.trees_latest[target]) 
+                   
+            self.print_tree(self.model)
+            
+            self.trees_latest=deepcopy(self.model.trees)
+            print "************************************"
+            print "self.trees_latest after assignment"
+            for item in self.model.targets:
+                trees=self.trees_latest[item]
+                for tree in trees:
+                    print self.model.get_tree_clauses(tree)
+            print "************************************"        
+            raw_input()
+        """Test trajectory generation and value function Inference"""
         i = 0 
         testing_rmse_per_traj=[]
         while i < self.test_trajectory_no: #test trajectories for logistics
@@ -584,7 +670,7 @@ class FVI(object):
                 while not state.goal():
                     s_number = state.state_number
                     s_facts = state.get_state_facts()
-                    state_action_pair = state.execute_random_action()
+                    state_action_pair = state.execute_random_action(actn_dist=self.test_exploit)
                     state = state_action_pair[0]
                     action = state_action_pair[1][0][:-1]
                     trajectory.append((s_number, s_facts+[action]))
@@ -600,7 +686,7 @@ class FVI(object):
                     #raw_input()
                     self.init_values(values, trajectory)
                     self.compute_value_of_test_trajectory(values, trajectory, AVI=True)
-                    rmse_test = self.compute_test_error(values)
+                    rmse_test = self.compute_train_error(values,trajectory)
                     testing_rmse_per_traj.append(rmse_test)
                     self.state_number += 1
             i += 1
