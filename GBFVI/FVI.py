@@ -34,7 +34,7 @@ class FVI(object):
         self.state_number = 1
         self.current_run=run_latest
         self.test_trajectory_no=test_trajectory_length
-        self.burn_in_no_of_traj=10
+        self.burn_in_no_of_traj=20
         self.actions_all=['move','unload','load']
         
         """Exploration and exploitation probabilities for traina nd test trajectories"""
@@ -93,7 +93,7 @@ class FVI(object):
                     current_state_number = reversed_trajectory[i][0]
                     current_state = reversed_trajectory[i][1][:-1]
                     current_action = reversed_trajectory[i][1][-1]
-                    value_of_state = immediate_reward + discount_factor*next_state_value #V(S) = R(S) + gamma*V(S')
+                    value_of_state = immediate_reward + discount_factor*next_state_value ## Q(S,a) = R(S) + gamma*Q_hat(S',a')
                     key = (current_state_number, tuple(current_state[:-1]))
                     total += value_of_state
                     values[current_action][key] = value_of_state
@@ -115,9 +115,9 @@ class FVI(object):
                     value_of_next_state = self.model.testExamples[next_state_action.split('(')[0]][next_state_action]
                 except:
                     value_of_next_state = 0
-                    self.print_tree(self.model)
-                    raw_input("compute_value_of_trajectory")
-                value_of_state = immediate_reward + discount_factor * value_of_next_state  # V(S) = R(S) + gamma*V_hat(S')
+                    #self.print_tree(self.model)
+                    #raw_input("compute_value_of_trajectory")
+                value_of_state = immediate_reward + discount_factor * value_of_next_state  # Q(S,a) = R(S) + gamma*Q_hat(S',a')
                 key = (state_number, tuple(state[:-1]))
                 total += value_of_state
                 values[state_action][key] = value_of_state
@@ -172,21 +172,20 @@ class FVI(object):
             #print 'current_state,current_action.next_state,next_state_action',state,state_action,next_state,next_state_action
             facts = list(next_state)
             examples = [next_state_action+" "+str(0.0)]
-            value_of_next_state = 0
+            #value_of_next_state = 0
+            value_of_current_state = 0
             try:
                 self.model.infer(facts, examples)
-                value_of_next_state = self.model.testExamples[next_state_action.split('(')[0]][next_state_action]
+                #value_of_next_state = self.model.testExamples[next_state_action.split('(')[0]][next_state_action]
+                value_of_current_state = self.model.testExamples[state_action.split('(')[0]][state_action]
             except:
-                value_of_next_state = 0
-                self.print_tree(self.model)
-                raw_input("compute_value_of_test_trajectory")
-            infered_state_value = immediate_reward + discount_factor * value_of_next_state  # V(S) = R(S) + gamma*V_hat(S')
+                value_of_current_state = 0
+                #self.print_tree(self.model)
+                #raw_input("compute_value_of_test_trajectory")
+            #infered_state_value = immediate_reward + discount_factor * value_of_next_state  # V(S) = R(S) + gamma*V_hat(S')
+            infered_state_value = value_of_current_state
             key = (state_number, tuple(state[:-1]))
-            #print 'current_action,state,next_state_action,next_state',state,state_action, next_state,next_state_action
-            #raw_input()
             true_state_value=values[state_action][key]
-            #print "****************",true_state_value,i
-            #raw_input()
             
             """Q(s,a) for all state action pairs in the test trajectory"""
             self.true_state_action_val.append(true_state_value)
@@ -355,10 +354,6 @@ class FVI(object):
         reg.learn(facts, examples, bk)
         self.model = reg
         self.trees_latest=deepcopy(self.model.trees)
-        
-        self.print_tree(self.model)
-      
-        raw_input("BURN IN PERIOD FINISHED")
         self.AVI()
         if self.transfer:
             self.AVI()
@@ -387,16 +382,16 @@ class FVI(object):
                     value_of_current_state = self.model.testExamples[state_action.split('(')[0]][state_action]
                 except:
                     value_of_current_state = 0
-                    self.print_tree(self.model)
-                    raw_input("compute_bellman_error")
+                    #self.print_tree(self.model)
+                    #raw_input("compute_bellman_error")
                 try:
                     self.model.infer(facts, examples)
                     value_of_next_state = self.model.testExamples[next_state_action.split('(')[0]][next_state_action]
                 except:
                     value_of_next_state = 0
-                    self.print_tree(self.model)
-                    raw_input("compute_bellman_error")
-                bellman_error = abs((immediate_reward + discount_factor * value_of_next_state) - value_of_current_state)  # |R(S) + gamma*V_hat(S') - V_hat(S)|
+                    #self.print_tree(self.model)
+                    #raw_input("compute_bellman_error")
+                bellman_error = abs((immediate_reward + discount_factor * value_of_next_state) - value_of_current_state)  # |R(S) + gamma*Q_hat(S',a') - Q_hat(S,a)|
                 bellman_errors.append(bellman_error)
         if aggregate == 'avg':
             return (sum(bellman_errors)/float(len(bellman_errors))) #return average or max, right now average
@@ -570,16 +565,12 @@ class FVI(object):
                     trajectories.append(trajectory)
                     if within_time:
                         self.init_values(values, trajectory)
-                        if i == 0:
-                            #totals.append(self.compute_value_of_trajectory(
-                            #    values, trajectory, AVI=True))
-                            self.compute_value_of_trajectory(values, trajectory, AVI=True)
-                        else:
-                            # perform computation using fitted value iteration
-                            #totals.append(self.compute_value_of_trajectory(
-                            #    values, trajectory, AVI=True))
-                            self.compute_value_of_trajectory(values, trajectory, AVI=True)
-                            
+                        #totals.append(self.compute_value_of_trajectory(
+                        #    values, trajectory, AVI=True))
+                        self.compute_value_of_trajectory(values, trajectory, AVI=True)
+                        # perform computation using fitted value iteration
+                        #totals.append(self.compute_value_of_trajectory(
+                        #    values, trajectory, AVI=True))
                         self.state_number += 1
                         for key in values:
                             if values[key]:
@@ -605,7 +596,7 @@ class FVI(object):
             #    self.total_rewards.append(sum(totals)/float(len(totals)))
             #    fp.write(str(sum(totals)/float(len(totals)))+"\n")
             # self.model.infer(facts,examples)
-            fitted_values = self.model.infer(facts, examples)
+            #fitted_values = self.model.infer(facts, examples)
             bellman_error = self.compute_bellman_error(trajectories,aggregate='avg')            
             self.bellman_error_avg.append(bellman_error)
             bellman_error = self.compute_bellman_error(trajectories,aggregate='max')
@@ -624,39 +615,38 @@ class FVI(object):
             self.model.setTargets(targets)
             self.model.learn(facts, examples, bk)
             
-            """Update the latest set of trees with the model that has been learnt in the current iteration"""
-            #for key in self.model.trees:
-            #    self.trees_latest[key]=deepcopy(self.model.trees[key])
-            print "The targets are", self.model.targets
-            
-            print "self.trees_latest before assignment"
-            print "************************************"
-            for item in self.actions_all:
-                trees=self.trees_latest[item]
-                for tree in trees:
-                    print self.model.get_tree_clauses(tree)
-            print "************************************"        
-            print"self.model.trees" 
+            #print "self.trees_latest before assignment"
+            #print "************************************"
+            #for item in self.actions_all:
+            #    trees=self.trees_latest[item]
+            #    for tree in trees:
+            #        print self.model.get_tree_clauses(tree)
+            #print "************************************"        
+            #print"self.model.trees" 
             
             for target in self.actions_all:
-                #if ((not self.model.trees[target]) or (target not in self.model.trees)):
                 if target not in self.model.trees:    
-                   print (target)
-                   print (self.model.trees.keys()) 
-                   print "model.trees does not have all the targets" 
-                   self.model.trees[target]= deepcopy(self.trees_latest[target]) 
+                   #print (target)
+                   #print (self.model.trees.keys()) 
+                   #print "model.trees does not have all the targets" 
+                   try:
+                      print "self.model.trees[target]",self.model.trees[target], self.trees_latest[target]
+                   except:
+                      print "No tree for the target found"
+                      self.model.trees[target]= deepcopy(self.trees_latest[target])
+                      self.model.addTarget(target)
                    
-            self.print_tree(self.model)
+            #self.print_tree(self.model)
             
             self.trees_latest=deepcopy(self.model.trees)
-            print "************************************"
-            print "self.trees_latest after assignment"
-            for item in self.model.targets:
-                trees=self.trees_latest[item]
-                for tree in trees:
-                    print self.model.get_tree_clauses(tree)
-            print "************************************"        
-            raw_input()
+            #print "************************************"
+            #print "self.trees_latest after assignment"
+            #for item in self.model.targets:
+            #    trees=self.trees_latest[item]
+            #    for tree in trees:
+            #        print self.model.get_tree_clauses(tree)
+            #print "************************************"        
+            #raw_input()
         """Test trajectory generation and value function Inference"""
         i = 0 
         testing_rmse_per_traj=[]

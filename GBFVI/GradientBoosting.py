@@ -21,7 +21,10 @@ class GradientBoosting(object):
 
     def setTargets(self,targets):
         self.targets = targets
-
+    
+    def addTarget(self,target):
+        self.targets.append(target)
+    
     def learn(self,facts,examples,bk):
         self.trees = {}
         for target in self.targets:
