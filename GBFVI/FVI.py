@@ -39,8 +39,8 @@ class FVI(object):
         
         """Exploration and exploitation probabilities for traina nd test trajectories"""
         self.exploit=policy
-        self.exploration=1-self.exploit
-        self.test_exploit=0.9
+        self.explore=1-self.exploit
+        self.test_explore=0.1
         
         """These are the statistics that needs to be averaged accross runs"""
         self.bellman_error_avg=[]
@@ -303,7 +303,7 @@ class FVI(object):
                         f.write("="*80+"\n")
                     s_number = state.state_number
                     s_facts = state.get_state_facts()
-                    state_action_pair = state.execute_random_action(actn_dist=self.exploit)
+                    state_action_pair = state.execute_random_action(actn_dist=(1-self.explore))
                     state = state_action_pair[0]  # state
                     # action and remove period
                     action = state_action_pair[1][0][:-1]
@@ -354,6 +354,8 @@ class FVI(object):
         reg.learn(facts, examples, bk)
         self.model = reg
         self.trees_latest=deepcopy(self.model.trees)
+        #raw_input("BURN IN FINISHED")
+        self.explore=0.5
         self.AVI()
         if self.transfer:
             self.AVI()
@@ -428,8 +430,8 @@ class FVI(object):
                     inferred_value = self.model.testExamples[current_action.split('(')[0]][current_action]
                 except:
                     inferred_value = 0
-                    self.print_tree(self.model)
-                    raw_input("compute_train_error"+str(i))
+                    #self.print_tree(self.model)
+                    #raw_input("compute_train_error"+str(i))
                 train_errors.append(abs(value_of_state - inferred_value))
             else:
                 next_state_number = reversed_trajectory[i-1][0]
@@ -456,25 +458,6 @@ class FVI(object):
                 train_errors.append(abs(value_of_state - inferred_value))
         squared_train_errors = [item**2 for item in train_errors]
         return (sqrt(sum(squared_train_errors)/float(len(train_errors))))
-    
-#    def compute_test_error(self,values):
-#        
-#        '''computers test error during training'''
-#        test_errors = []
-#        for key in values:
-#            inferred_value = 0.0
-#            try:
-#                inferred_value = self.model.testExamples[key.split('(')[
-#                    0]][key]
-#            except:
-#                inferred_value = 0
-#                raw_input("compute_test_error")
-#            state_action_value = values[key]
-#            for state in state_action_value:
-#                value = state_action_value[state]
-#                test_errors.append(abs(value-inferred_value))
-#        squared_test_errors = [item**2 for item in test_errors]
-#        return (sqrt(sum(squared_test_errors)/float(len(test_errors))))
 
     def AVI(self):
         #values = {}
@@ -485,7 +468,7 @@ class FVI(object):
             j = 0
             facts, examples, bk = [], [], []
             values = {}
-            print "The exploration policy is", self.exploration
+            print "The exploration policy is", self.explore
             while j < self.batch_size:
                 if self.simulator == "logistics":
                     state = Logistics(number=self.state_number, start=True)
@@ -530,7 +513,7 @@ class FVI(object):
                         fp.write("="*80+"\n")
                         s_number = state.state_number
                         s_facts = state.get_state_facts()
-                        state_action_pair = state.execute_random_action(actn_dist=self.exploit)
+                        state_action_pair = state.execute_random_action(actn_dist=(1-self.explore))
                         state = state_action_pair[0]  # state
                         # action and remove period
                         action = state_action_pair[1][0][:-1]
@@ -587,8 +570,7 @@ class FVI(object):
                         
             """Decaying the exploitation probability"""
             if (i!=0) and (i%10 ==0):
-               self.exploration=(self.exploration/1.5)
-               self.exploit=1-self.exploration
+               self.explore=(self.explore/1.5)
                
             #training_rmses.append(rmse_train)
             self.training_rmse.append(sum(training_rmses_per_traj)/float(len(training_rmses_per_traj)))
@@ -660,7 +642,7 @@ class FVI(object):
                 while not state.goal():
                     s_number = state.state_number
                     s_facts = state.get_state_facts()
-                    state_action_pair = state.execute_random_action(actn_dist=self.test_exploit)
+                    state_action_pair = state.execute_random_action(actn_dist=(1-self.test_explore))
                     state = state_action_pair[0]
                     action = state_action_pair[1][0][:-1]
                     trajectory.append((s_number, s_facts+[action]))
