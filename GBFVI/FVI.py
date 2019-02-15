@@ -34,7 +34,7 @@ class FVI(object):
         self.state_number = 1
         self.current_run=run_latest
         self.test_trajectory_no=test_trajectory_length
-        self.burn_in_no_of_traj=20
+        self.burn_in_no_of_traj=10
         self.actions_all=['move','unload','load']
         
         """Exploration and exploitation probabilities for traina nd test trajectories"""
@@ -233,6 +233,11 @@ class FVI(object):
             print "key is", key
             if key not in values:
                 values[key] = {}
+                
+    def get_maximizing_action(self,all_possible_actions,trajectory):
+        '''returns action with max value'''
+        print (all_possible_actions)
+        raw_input()
 
     def compute_transfer_model(self):
         '''computes the transfer model if transfer=1
@@ -355,7 +360,7 @@ class FVI(object):
         self.model = reg
         self.trees_latest=deepcopy(self.model.trees)
         #raw_input("BURN IN FINISHED")
-        self.explore=0.5
+        self.explore=0.1
         self.AVI()
         if self.transfer:
             self.AVI()
@@ -569,8 +574,8 @@ class FVI(object):
                         j += 1
                         
             """Decaying the exploitation probability"""
-            if (i!=0) and (i%10 ==0):
-               self.explore=(self.explore/1.5)
+            #if (i!=0) and (i%10 ==0):
+            #   self.explore=(self.explore/1.5)
                
             #training_rmses.append(rmse_train)
             self.training_rmse.append(sum(training_rmses_per_traj)/float(len(training_rmses_per_traj)))
@@ -642,6 +647,7 @@ class FVI(object):
                 while not state.goal():
                     s_number = state.state_number
                     s_facts = state.get_state_facts()
+                    all_possible_actions = state.get_all_actions()
                     state_action_pair = state.execute_random_action(actn_dist=(1-self.test_explore))
                     state = state_action_pair[0]
                     action = state_action_pair[1][0][:-1]
@@ -657,6 +663,7 @@ class FVI(object):
                     #print "The  test trajectory is", trajectory 
                     #raw_input()
                     self.init_values(values, trajectory)
+                    max_value_action = self.get_maximizing_action(all_possible_actions,trajectory)
                     self.compute_value_of_test_trajectory(values, trajectory, AVI=True)
                     rmse_test = self.compute_train_error(values,trajectory)
                     testing_rmse_per_traj.append(rmse_test)
