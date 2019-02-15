@@ -34,13 +34,13 @@ class FVI(object):
         self.state_number = 1
         self.current_run=run_latest
         self.test_trajectory_no=test_trajectory_length
-        self.burn_in_no_of_traj=10
+        self.burn_in_no_of_traj=6
         self.actions_all=['move','unload','load']
         
         """Exploration and exploitation probabilities for traina nd test trajectories"""
         self.exploit=policy
         self.explore=1-self.exploit
-        self.test_explore=0.1
+        self.test_explore=0.7
         
         """These are the statistics that needs to be averaged accross runs"""
         self.bellman_error_avg=[]
@@ -230,14 +230,49 @@ class FVI(object):
         '''
         for item in trajectory:
             key = item[1][-1]
-            print "key is", key
+            #print "key is", key
             if key not in values:
                 values[key] = {}
                 
-    def get_maximizing_action(self,all_possible_actions,trajectory):
+    def get_trajectory_mismatch(self,test_trajectory):
         '''returns action with max value'''
-        print (all_possible_actions)
-        raw_input()
+        print "********************TEST**********************************************"
+        N = len(test_trajectory)
+        mismatch = 0
+        for i in range(N):
+            max_actions = []
+            state = test_trajectory[i][0] 
+            state_action = test_trajectory[i][1] #optimal action
+            #print "The state is", state.get_state_facts()
+            #print "State action", state_action
+            state.get_all_actions()
+            action_values = []
+            all_actions = [item[:-1] for item in state.all_actions]
+            for action in all_actions:
+                facts = state.get_state_facts()
+                examples = [action+" "+str(0.0)]
+                self.model.infer(facts, examples)
+                value_of_action = self.model.testExamples[action.split('(')[0]][action]
+                #print "Action_value", (value_of_action)
+                action_values.append(value_of_action)
+            print "action_values",action_values    
+            max_indices = []
+            max_val = -1000
+            M = len(action_values)
+            for i in range(M):
+                if action_values[i] >= max_val:
+                    max_indices.append(i)
+                    max_val = action_values[i]
+            print "max_val",max_val        
+            for index in max_indices:
+                max_actions.append(all_actions[index])
+            #print 'max_actions',max_actions    
+            if state_action not in max_actions:
+                print 'MISMATCH', state_action, max_actions
+                mismatch += 1
+        return (N,mismatch)
+            #print state.all_actions
+        
 
     def compute_transfer_model(self):
         '''computes the transfer model if transfer=1
@@ -637,6 +672,7 @@ class FVI(object):
         """Test trajectory generation and value function Inference"""
         i = 0 
         testing_rmse_per_traj=[]
+        test_trajectory_mismatches = []
         while i < self.test_trajectory_no: #test trajectories for logistics
             if self.simulator == "logistics": # Add other domains specific to testing
                 state = Logistics(number=self.state_number, start=True)
@@ -644,13 +680,15 @@ class FVI(object):
                 within_time = True
                 start = clock()
                 trajectory = []
+                test_trajectory = []
                 while not state.goal():
                     s_number = state.state_number
                     s_facts = state.get_state_facts()
-                    all_possible_actions = state.get_all_actions()
+                    prev_state = deepcopy(state)
                     state_action_pair = state.execute_random_action(actn_dist=(1-self.test_explore))
                     state = state_action_pair[0]
                     action = state_action_pair[1][0][:-1]
+                    test_trajectory.append((prev_state,action))
                     trajectory.append((s_number, s_facts+[action]))
                     end = clock()
                     time_elapsed = abs(end-start)
@@ -663,10 +701,11 @@ class FVI(object):
                     #print "The  test trajectory is", trajectory 
                     #raw_input()
                     self.init_values(values, trajectory)
-                    max_value_action = self.get_maximizing_action(all_possible_actions,trajectory)
+                    test_trajectory_mismatches.append(self.get_trajectory_mismatch(test_trajectory))
                     self.compute_value_of_test_trajectory(values, trajectory, AVI=True)
                     rmse_test = self.compute_train_error(values,trajectory)
                     testing_rmse_per_traj.append(rmse_test)
                     self.state_number += 1
             i += 1
+        print (test_trajectory_mismatches)
         self.testing_rmse.append(sum(testing_rmse_per_traj)/float(len(testing_rmse_per_traj)))

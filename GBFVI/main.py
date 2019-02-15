@@ -21,7 +21,7 @@ path="C://Users//sxd170431//Desktop//Work//Projects//Relational_RL//Results//"
 no_of_runs=1
 policy=0
 no_of_state_actions_average=50
-test_trajectory_length=50
+test_trajectory_length=10
 #length_start_state=[]
 
 """Data structures for capturing values accross the runs"""
@@ -42,7 +42,7 @@ rmtree(path)
 
 for run in range(0,no_of_runs):
   print "Beginning run no", run  
-  model=FVI(simulator="logistics",trees=2,batch_size=1,number_of_iterations=1, path=path,runs=no_of_runs, policy=policy,run_latest=run,loss="LS",test_trajectory_length=test_trajectory_length) #logistics default
+  model=FVI(simulator="logistics",trees=3,batch_size=10,number_of_iterations=20, path=path,runs=no_of_runs, policy=policy,run_latest=run,loss="LS",test_trajectory_length=test_trajectory_length) #logistics default
   
   """Path where the results will be saved"""
   #resultpath=path+model.simulator+"/Runs_"+str(no_of_runs)+"/Policy_"+str(policy)+"/trees_"+str(model.trees)+"/"+model.loss+"/"
