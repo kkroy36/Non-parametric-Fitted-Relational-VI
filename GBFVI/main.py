@@ -18,10 +18,10 @@ from shutil import rmtree
 path="C://Users//sxd170431//Desktop//Work//Projects//Relational_RL//Results//"
 #path="D://Grad Studies//Research//Relational RL//Results//"
 #path="/home/kauroy/Desktop/Non-parametric-Fitted-Relational-VI-master/GBFVI/Results/"
-no_of_runs=1
+no_of_runs=5
 policy=0
 no_of_state_actions_average=50
-test_trajectory_length=10
+test_trajectory_length=1
 #length_start_state=[]
 
 """Data structures for capturing values accross the runs"""
@@ -41,38 +41,41 @@ np.set_printoptions(threshold=np.inf)
 rmtree(path)
 
 for run in range(0,no_of_runs):
-  print "Beginning run no", run  
-  model=FVI(simulator="logistics",trees=3,batch_size=10,number_of_iterations=20, path=path,runs=no_of_runs, policy=policy,run_latest=run,loss="LS",test_trajectory_length=test_trajectory_length) #logistics default
-  
-  """Path where the results will be saved"""
-  #resultpath=path+model.simulator+"/Runs_"+str(no_of_runs)+"/Policy_"+str(policy)+"/trees_"+str(model.trees)+"/"+model.loss+"/"
-  resultpath=path+model.simulator+"//Runs_"+str(no_of_runs)+"//Policy_"+str(policy)+"//trees_"+str(model.trees)+"//"+model.loss+"//"
-  ind_runpath=path+model.simulator+"//Runs_"+str(no_of_runs)+"//Policy_"+str(policy)+"//trees_"+str(model.trees)+"//"+model.loss+"//"+"Run"+str(run)+"//"
-  
-  """Statistics for a single run"""
-  all_run_bellman_error_mean.append(model.bellman_error_avg)
-  all_run_bellman_error_max.append(model.bellman_error_max)
-  #all_run_total_rewards.append(model.total_rewards)
-  all_run_rmse_train.append(model.training_rmse)
-  all_run_rmse_test.append(model.testing_rmse)
-  """Averages over first 50 (s,a) pairs. This variable can be changes"""
-  all_run_test_error.append(model.test_error_state_action[0:no_of_state_actions_average])
-  all_run_true_values.append(model.true_state_action_val[0:no_of_state_actions_average])
-  all_run_infered_values.append(model.inf_state_action_val[0:no_of_state_actions_average])
-  """Statistics for keeping the Q(s,a) of the start state of every trajectory"""
-  all_run_test_error_start.append(model.test_start_error_state_action[0:test_trajectory_length-5])
-  all_run_true_values_start.append(model.true_start_state_action_val[0:test_trajectory_length-5])
-  all_run_infered_values_start.append(model.inf_start_state_action_val[0:test_trajectory_length-5])
-  #FVI(simulator="blocks",trees=1,batch_size=3,number_of_iterations=2) #blocksworld
-  #FVI(simulator="pong",batch_size=2,trees=1,loss="LS",number_of_iterations=20) #pong --> uncomment import statements from FVI.py
-  #FVI(simulator="tetris",trees=1,loss="LS",number_of_iterations=20) #tetris --> uncomment import stmts from FVI.py
-  #FVI(simulator="wumpus",trees=3,batch_size=3,number_of_iterations=5) #wumpusworld
-  #FVI(simulator="blackjack",transfer=1,number_of_iterations=100) #no facts in 1 trajectory => (batch_size=10)
-  #FVI(simulator="50chain",batch_size=2,trees=1,loss="LS",number_of_iterations=20) #for simple domains 10 trees not required
-  #FVI(simulator="net_admin",trees=1,batch_size=6,number_of_iterations=1) #network administrator domain
-  np.savetxt(ind_runpath+'rmse_train_error.txt',model.training_rmse)
-  np.savetxt(ind_runpath+'rmse_test_error.txt',model.testing_rmse)
-  
+  try:
+      print "Beginning run no", run  
+      model=FVI(simulator="logistics",trees=2,batch_size=10,number_of_iterations=2, path=path,runs=no_of_runs, policy=policy,run_latest=run,loss="LS",test_trajectory_length=test_trajectory_length) #logistics default
+      
+      """Path where the results will be saved"""
+      #resultpath=path+model.simulator+"/Runs_"+str(no_of_runs)+"/Policy_"+str(policy)+"/trees_"+str(model.trees)+"/"+model.loss+"/"
+      resultpath=path+model.simulator+"//Runs_"+str(no_of_runs)+"//Policy_"+str(policy)+"//trees_"+str(model.trees)+"//"+model.loss+"//"
+      ind_runpath=path+model.simulator+"//Runs_"+str(no_of_runs)+"//Policy_"+str(policy)+"//trees_"+str(model.trees)+"//"+model.loss+"//"+"Run"+str(run)+"//"
+      
+      """Statistics for a single run"""
+      all_run_bellman_error_mean.append(model.bellman_error_avg)
+      all_run_bellman_error_max.append(model.bellman_error_max)
+      #all_run_total_rewards.append(model.total_rewards)
+      all_run_rmse_train.append(model.training_rmse)
+      all_run_rmse_test.append(model.testing_rmse)
+      """Averages over first 50 (s,a) pairs. This variable can be changes"""
+      all_run_test_error.append(model.test_error_state_action[0:no_of_state_actions_average])
+      all_run_true_values.append(model.true_state_action_val[0:no_of_state_actions_average])
+      all_run_infered_values.append(model.inf_state_action_val[0:no_of_state_actions_average])
+      """Statistics for keeping the Q(s,a) of the start state of every trajectory"""
+      all_run_test_error_start.append(model.test_start_error_state_action[0:test_trajectory_length-5])
+      all_run_true_values_start.append(model.true_start_state_action_val[0:test_trajectory_length-5])
+      all_run_infered_values_start.append(model.inf_start_state_action_val[0:test_trajectory_length-5])
+      #FVI(simulator="blocks",trees=1,batch_size=3,number_of_iterations=2) #blocksworld
+      #FVI(simulator="pong",batch_size=2,trees=1,loss="LS",number_of_iterations=20) #pong --> uncomment import statements from FVI.py
+      #FVI(simulator="tetris",trees=1,loss="LS",number_of_iterations=20) #tetris --> uncomment import stmts from FVI.py
+      #FVI(simulator="wumpus",trees=3,batch_size=3,number_of_iterations=5) #wumpusworld
+      #FVI(simulator="blackjack",transfer=1,number_of_iterations=100) #no facts in 1 trajectory => (batch_size=10)
+      #FVI(simulator="50chain",batch_size=2,trees=1,loss="LS",number_of_iterations=20) #for simple domains 10 trees not required
+      #FVI(simulator="net_admin",trees=1,batch_size=6,number_of_iterations=1) #network administrator domain
+      np.savetxt(ind_runpath+'rmse_train_error.txt',model.training_rmse)
+      np.savetxt(ind_runpath+'rmse_test_error.txt',model.testing_rmse)
+  except:
+      print 'Run'+str(run)+'aborted'
+      continue
 """Average the results across each run"""
 #all_run_total_rewards_avg = np.mean(all_run_total_rewards,axis=0)
 all_run_bellman_error_mean_avg=np.mean(all_run_bellman_error_mean,axis=0)

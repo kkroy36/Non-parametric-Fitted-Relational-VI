@@ -34,7 +34,7 @@ class FVI(object):
         self.state_number = 1
         self.current_run=run_latest
         self.test_trajectory_no=test_trajectory_length
-        self.burn_in_no_of_traj=6
+        self.burn_in_no_of_traj=3
         self.actions_all=['move','unload','load']
         
         """Exploration and exploitation probabilities for traina nd test trajectories"""
@@ -116,7 +116,7 @@ class FVI(object):
                 except:
                     value_of_next_state = 0
                     #self.print_tree(self.model)
-                    #raw_input("compute_value_of_trajectory")
+                    ##raw_input("compute_value_of_trajectory")
                 value_of_state = immediate_reward + discount_factor * value_of_next_state  # Q(S,a) = R(S) + gamma*Q_hat(S',a')
                 key = (state_number, tuple(state[:-1]))
                 total += value_of_state
@@ -143,7 +143,7 @@ class FVI(object):
                 #print 'current_action,state',current_action,key
                 values[current_action][key] = value_of_state
                 #print "value of state",value_of_state,i 
-                #raw_input()
+                ##raw_input()
             else:
                 next_state_number = reversed_trajectory[i-1][0]
                 next_state = reversed_trajectory[i-1][1][:-1]
@@ -157,9 +157,9 @@ class FVI(object):
                 #print 'current_action,state',current_action,key
                 values[current_action][key] = value_of_state
                 #print "value of state",value_of_state,i 
-                #raw_input()
+                ##raw_input()
         #print "Length of trajectory", len(trajectory)
-        #raw_input()
+        ##raw_input()
         """Calculate the infered Q-values from the Fitted Value Iteration model, also calculate the error"""                                 
      
         for i in range(number_of_transitions-1):
@@ -181,7 +181,7 @@ class FVI(object):
             except:
                 value_of_current_state = 0
                 #self.print_tree(self.model)
-                #raw_input("compute_value_of_test_trajectory")
+                ##raw_input("compute_value_of_test_trajectory")
             #infered_state_value = immediate_reward + discount_factor * value_of_next_state  # V(S) = R(S) + gamma*V_hat(S')
             infered_state_value = value_of_current_state
             key = (state_number, tuple(state[:-1]))
@@ -394,7 +394,7 @@ class FVI(object):
         reg.learn(facts, examples, bk)
         self.model = reg
         self.trees_latest=deepcopy(self.model.trees)
-        #raw_input("BURN IN FINISHED")
+        ##raw_input("BURN IN FINISHED")
         self.explore=0.1
         self.AVI()
         if self.transfer:
@@ -425,14 +425,14 @@ class FVI(object):
                 except:
                     value_of_current_state = 0
                     #self.print_tree(self.model)
-                    #raw_input("compute_bellman_error")
+                    ##raw_input("compute_bellman_error")
                 try:
                     self.model.infer(facts, examples)
                     value_of_next_state = self.model.testExamples[next_state_action.split('(')[0]][next_state_action]
                 except:
                     value_of_next_state = 0
                     #self.print_tree(self.model)
-                    #raw_input("compute_bellman_error")
+                    ##raw_input("compute_bellman_error")
                 bellman_error = abs((immediate_reward + discount_factor * value_of_next_state) - value_of_current_state)  # |R(S) + gamma*Q_hat(S',a') - Q_hat(S,a)|
                 bellman_errors.append(bellman_error)
         if aggregate == 'avg':
@@ -471,7 +471,7 @@ class FVI(object):
                 except:
                     inferred_value = 0
                     #self.print_tree(self.model)
-                    #raw_input("compute_train_error"+str(i))
+                    ##raw_input("compute_train_error"+str(i))
                 train_errors.append(abs(value_of_state - inferred_value))
             else:
                 next_state_number = reversed_trajectory[i-1][0]
@@ -494,7 +494,7 @@ class FVI(object):
                     inferred_value = self.model.testExamples[current_action.split('(')[0]][current_action]
                 except:
                     inferred_value = 0
-                    raw_input("compute_train_error"+str(i))
+                    #raw_input("compute_train_error"+str(i))
                 train_errors.append(abs(value_of_state - inferred_value))
         squared_train_errors = [item**2 for item in train_errors]
         return (sqrt(sum(squared_train_errors)/float(len(train_errors))))
@@ -668,7 +668,7 @@ class FVI(object):
             #    for tree in trees:
             #        print self.model.get_tree_clauses(tree)
             #print "************************************"        
-            #raw_input()
+            ##raw_input()
         """Test trajectory generation and value function Inference"""
         i = 0 
         testing_rmse_per_traj=[]
@@ -699,7 +699,7 @@ class FVI(object):
                 if within_time:
                     #print "************* i is", i
                     #print "The  test trajectory is", trajectory 
-                    #raw_input()
+                    ##raw_input()
                     self.init_values(values, trajectory)
                     test_trajectory_mismatches.append(self.get_trajectory_mismatch(test_trajectory))
                     self.compute_value_of_test_trajectory(values, trajectory, AVI=True)
