@@ -41,7 +41,7 @@ class Boosting(object):
         sumOfGradients = 0
         for tree in trees: #add leaf values satisfied by example in each tree
             gradient = Boosting.inferTreeValue(tree,example,data)
-            print ("value of example: ",gradient)
+            #print ("value of example: ",gradient)
             if gradient != None:
                 sumOfGradients += gradient
         return sumOfGradients #return the sum
