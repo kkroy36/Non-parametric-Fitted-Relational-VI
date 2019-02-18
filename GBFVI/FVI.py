@@ -56,9 +56,9 @@ class FVI(object):
         self.test_trajetories_mismatches = []
         
         """These contain true and infered Q(s,a) values for just the first state action pair in the test trajectory"""
-        self.true_start_state_action_val=[]
-        self.inf_start_state_action_val=[]
-        self.test_start_error_state_action=[]
+        #self.true_start_state_action_val=[]
+        #self.inf_start_state_action_val=[]
+        #self.test_start_error_state_action=[]
         
         """This is the path where results for a particular run would be stored"""
         self.resultpath=path+self.simulator+"//Runs_"+str(runs)+"//Policy_"+str(policy)+"//trees_"+str(self.trees)+"//"+self.loss+"//"
@@ -195,17 +195,17 @@ class FVI(object):
             self.test_error_state_action.append(abs(infered_state_value - true_state_value))
             
             """Q(s,a) for the first state action pair in the test trajectory"""
-            if (i==0):
-               
-               self.true_start_state_action_val.append(true_state_value)
-               self.inf_start_state_action_val.append(infered_state_value)
-               self.test_start_error_state_action.append(abs(infered_state_value - true_state_value))
-               with open(self.resultpath+"testing_error_start.txt","a") as fp:
-                    fp.write(str(abs(infered_state_value - true_state_value))+"\n")
-               with open(self.resultpath+"true_values_start.txt","a") as fp:
-                    fp.write(str(true_state_value)+"\n")
-               with open(self.resultpath+"inferred_values_start.txt","a") as fp:
-                    fp.write(str(infered_state_value)+"\n") 
+#            if (i==0):
+#               
+#               self.true_start_state_action_val.append(true_state_value)
+#               self.inf_start_state_action_val.append(infered_state_value)
+#               self.test_start_error_state_action.append(abs(infered_state_value - true_state_value))
+#               with open(self.resultpath+"testing_error_start.txt","a") as fp:
+#                    fp.write(str(abs(infered_state_value - true_state_value))+"\n")
+#               with open(self.resultpath+"true_values_start.txt","a") as fp:
+#                    fp.write(str(true_state_value)+"\n")
+#               with open(self.resultpath+"inferred_values_start.txt","a") as fp:
+#                    fp.write(str(infered_state_value)+"\n") 
             
             with open(self.resultpath+"testing_error.txt","a") as fp:
                 fp.write(str(abs(infered_state_value - true_state_value))+"\n")
