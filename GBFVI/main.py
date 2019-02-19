@@ -25,14 +25,15 @@ path="C://Users//sxd170431//Desktop//Work//Projects//Relational_RL//Results//"
 simulator="logistics"
 trees=3
 batch_size=10
-iters=10
+iters=50
 loss="LS"
-no_of_runs=1
+no_of_runs=30
 policy=0
 no_of_state_actions_average=30
-test_trajectory_length=5
-burn_in_no_of_traj=10
+test_trajectory_length=10
+burn_in_no_of_traj=5
 test_explore=0.1
+treeDepth=1
 """*******************************************************************************************************"""
 
 """Data structures for collecting statistics accross the runs"""
@@ -58,7 +59,7 @@ for run in range(0,no_of_runs):
       """Deletes the previous run informations"""
       if (os.path.isdir(ind_runpath)):
           rmtree(ind_runpath)
-      model=FVI(simulator=simulator,trees=trees,batch_size=batch_size,number_of_iterations=iters, path=path,runs=no_of_runs, policy=policy,run_latest=run,loss=loss,test_trajectory_length=test_trajectory_length,burn_in_no_of_traj=burn_in_no_of_traj,test_explore=0.1) #logistics default
+      model=FVI(simulator=simulator,trees=trees,batch_size=batch_size,number_of_iterations=iters, path=path,runs=no_of_runs, policy=policy,run_latest=run,loss=loss,test_trajectory_length=test_trajectory_length,burn_in_no_of_traj=burn_in_no_of_traj,test_explore=0.1,treeDepth=treeDepth) #logistics default
       """Path where the results will be saved"""
       #resultpath=path+model.simulator+"/Runs_"+str(no_of_runs)+"/Policy_"+str(policy)+"/trees_"+str(model.trees)+"/"+model.loss+"/"
       """Statistics for a single run"""

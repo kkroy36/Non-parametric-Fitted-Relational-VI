@@ -17,7 +17,7 @@ path="C://Users//sxd170431//Desktop//Work//Projects//Relational_RL//Results//"
 
 class FVI(object):
     
-    def __init__(self, transfer=0, simulator="logistics", batch_size=10, number_of_iterations=50, loss="LS", trees=10,path=path,runs=5, policy=0.9,run_latest=0,test_trajectory_length=50,burn_in_no_of_traj=10,test_explore=0.1):
+    def __init__(self, transfer=0, simulator="logistics", batch_size=10, number_of_iterations=50, loss="LS", trees=10,path=path,runs=5, policy=0.9,run_latest=0,test_trajectory_length=50,burn_in_no_of_traj=10,test_explore=0.1,treeDepth=1):
         '''transfer = 1, means a prespecified number of iterations are run and learning
            the regression model using RFGB, (relational model) before starting fitted
            value iteration with the learned values
@@ -27,6 +27,7 @@ class FVI(object):
         self.batch_size = batch_size
         self.loss = loss
         self.trees = trees
+        self.treeDepth=treeDepth
         """This keeps track of the latest set of trees for each action"""
         self.trees_latest={}
         self.number_of_iterations = number_of_iterations
@@ -399,14 +400,14 @@ class FVI(object):
                                 target+" "+str(values[target][state]))
                     i += 1
         targets = self.get_targets(examples)
-        reg = GradientBoosting(regression=True, treeDepth=3,
+        reg = GradientBoosting(regression=True, treeDepth=self.treeDepth,
                                trees=self.trees, loss=self.loss)
         reg.setTargets(targets)
         reg.learn(facts, examples, bk)
         self.model = reg
         self.trees_latest=deepcopy(self.model.trees)
         #####raw_input("BURN IN FINISHED")
-        self.explore=0.7
+        self.explore=0.9
         self.AVI()
         if self.transfer:
             self.AVI()
