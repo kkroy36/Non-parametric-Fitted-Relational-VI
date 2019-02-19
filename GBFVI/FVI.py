@@ -53,7 +53,7 @@ class FVI(object):
         self.training_rmse = [] #root mean squared error
         self.testing_rmse = [] #root mean squared error during testing
         self.test_trajectories_output = []
-        self.test_trajetories_mismatches = []
+        #self.test_trajetories_mismatches = []
         
         """These contain true and infered Q(s,a) values for just the first state action pair in the test trajectory"""
         #self.true_start_state_action_val=[]
@@ -236,30 +236,34 @@ class FVI(object):
             if key not in values:
                 values[key] = {}
     
-    '''           
+               
     def get_trajectory_mismatch(self,test_trajectory):
         #returns action with max value
         test_trajectory_output = []
-        action_value = {}
         print "********************TEST**********************************************"
         N = len(test_trajectory)
         mismatch = 0
+                    
         for i in range(N):
+            state_action_output_per_traj = []
+            state_action_output_per_traj.append(test_trajectory[i][0].get_state_facts())
+            state_action_output_per_traj.append(test_trajectory[i][1])
+            action_value = {}
             max_actions = []
             state = test_trajectory[i][0] 
             state_action = test_trajectory[i][1] #optimal action
-            print "The state is", state.get_state_facts()
-            print "State action", state_action
+            print "The state is: ", state.get_state_facts()
+            print "State action: ", state_action
             state.get_all_actions()
             action_values = []
-            all_actions = [item[:-1] for item in state.all_actions]
+            all_actions = [item[:-1] for item in state.all_actions] #remove periods from action predicates
             for action in all_actions:
                 facts = state.get_state_facts()
                 examples = [action+" "+str(0.0)]
                 self.model.infer(facts, examples)
                 value_of_action = self.model.testExamples[action.split('(')[0]][action]
                 action_value[action] = value_of_action
-                print "Action_value", action, value_of_action
+                print "Action_value: ", action, value_of_action
                 action_values.append(value_of_action)
             #print "action_values",action_values    
             max_indices = []
@@ -276,10 +280,9 @@ class FVI(object):
             if state_action not in max_actions:
                 print 'MISMATCH', state_action, max_actions
                 mismatch += 1
-        test_trajectory_output = [state.get_state_facts(),state_action,action_value]
+            state_action_output_per_traj.append(action_value)
+            test_trajectory_output.append(state_action_output_per_traj)
         return ([(N,mismatch),test_trajectory_output])
-            #print state.all_actions
-    '''
         
 
     def compute_transfer_model(self):
@@ -403,7 +406,7 @@ class FVI(object):
         self.model = reg
         self.trees_latest=deepcopy(self.model.trees)
         #####raw_input("BURN IN FINISHED")
-        self.explore=0.1
+        self.explore=0.7
         self.AVI()
         if self.transfer:
             self.AVI()
@@ -707,7 +710,7 @@ class FVI(object):
                     #print "The  test trajectory is", trajectory 
                     #####raw_input()
                     self.init_values(values, trajectory)
-                    #test_trajectory_output = self.get_trajectory_mismatch(test_trajectory)
+                    self.test_trajectories_output.append(self.get_trajectory_mismatch(test_trajectory))
                     #self.test_trajectories_output += [test_trajectory_output[0]]
                     #self.test_trajetories_mismatches += [test_trajectory_output[1]]
                     self.compute_value_of_test_trajectory(values, trajectory, AVI=True)

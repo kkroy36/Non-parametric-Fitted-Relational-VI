@@ -23,14 +23,14 @@ path="C://Users//sxd170431//Desktop//Work//Projects//Relational_RL//Results//"
 """*******************************************************************************************************"""
 
 simulator="logistics"
-trees=1
+trees=3
 batch_size=10
-iters=50
+iters=10
 loss="LS"
-no_of_runs=30
+no_of_runs=1
 policy=0
 no_of_state_actions_average=30
-test_trajectory_length=50
+test_trajectory_length=5
 burn_in_no_of_traj=10
 test_explore=0.1
 """*******************************************************************************************************"""
@@ -71,10 +71,9 @@ for run in range(0,no_of_runs):
       all_run_true_values.append(model.true_state_action_val[0:no_of_state_actions_average])
       all_run_infered_values.append(model.inf_state_action_val[0:no_of_state_actions_average])
       """Statistics for keeping the Q(s,a) of the start state of every trajectory"""
-      all_run_test_error_start.append(model.test_start_error_state_action[0:test_trajectory_length-5])
-      all_run_true_values_start.append(model.true_start_state_action_val[0:test_trajectory_length-5])
-      all_run_infered_values_start.append(model.inf_start_state_action_val[0:test_trajectory_length-5])
-      
+      #all_run_test_error_start.append(model.test_start_error_state_action[0:test_trajectory_length-5])
+      #all_run_true_values_start.append(model.true_start_state_action_val[0:test_trajectory_length-5])
+      #all_run_infered_values_start.append(model.inf_start_state_action_val[0:test_trajectory_length-5])
       #FVI(simulator="blocks",trees=1,batch_size=3,number_of_iterations=2) #blocksworld
       #FVI(simulator="pong",batch_size=2,trees=1,loss="LS",number_of_iterations=20) #pong --> uncomment import statements from FVI.py
       #FVI(simulator="tetris",trees=1,loss="LS",number_of_iterations=20) #tetris --> uncomment import stmts from FVI.py
@@ -86,6 +85,10 @@ for run in range(0,no_of_runs):
       np.savetxt(ind_runpath+'rmse_test_error.txt',model.testing_rmse)
       np.savetxt(ind_runpath+'bellman_error_avg.txt',model.bellman_error_avg)
       np.savetxt(ind_runpath+'bellman_error_max.txt',model.bellman_error_max)
+      with open(ind_runpath+'trajectory_and_mismatch_outputs.txt','a') as fp:
+          for item in model.test_trajectories_output:
+              fp.write(str(item)+"\n")
+              fp.write('*'*80+"\n")
   #except:
       #print 'Run'+str(run)+'aborted'
       #continue
@@ -97,9 +100,9 @@ all_run_bellman_error_max_avg = np.mean(all_run_bellman_error_max,axis=0)
 all_run_test_error_avg=np.mean(all_run_test_error,axis=0)
 all_run_true_values_avg=np.mean(all_run_true_values,axis=0)
 all_run_infered_values_avg=np.mean(all_run_infered_values,axis=0)
-all_run_test_error_start_avg=np.mean(all_run_test_error_start,axis=0)
-all_run_true_values_start_avg=np.mean(all_run_true_values_start,axis=0)
-all_run_infered_values_start_avg=np.mean(all_run_infered_values_start,axis=0)
+#all_run_test_error_start_avg=np.mean(all_run_test_error_start,axis=0)
+#all_run_true_values_start_avg=np.mean(all_run_true_values_start,axis=0)
+#all_run_infered_values_start_avg=np.mean(all_run_infered_values_start,axis=0)
 all_run_rmse_test_avg = np.mean(all_run_rmse_test,axis=0)
 all_run_rmse_train_avg = np.mean(all_run_rmse_train,axis=0)
 
@@ -110,9 +113,9 @@ np.savetxt(resultpath+'avg_bellman_error_max.txt',all_run_bellman_error_max_avg)
 np.savetxt(resultpath+'avg_test_error.txt',all_run_test_error_avg)
 np.savetxt(resultpath+'avg_true_val.txt',all_run_true_values_avg)
 np.savetxt(resultpath+'avg_inf_val.txt',all_run_infered_values_avg)
-np.savetxt(resultpath+'avg_test_error_start.txt',all_run_test_error_start_avg)
-np.savetxt(resultpath+'avg_true_val_start.txt',all_run_true_values_start_avg)
-np.savetxt(resultpath+'avg_inf_val_start.txt',all_run_infered_values_start_avg)
+#np.savetxt(resultpath+'avg_test_error_start.txt',all_run_test_error_start_avg)
+#np.savetxt(resultpath+'avg_true_val_start.txt',all_run_true_values_start_avg)
+#np.savetxt(resultpath+'avg_inf_val_start.txt',all_run_infered_values_start_avg)
 np.savetxt(resultpath+'avg_rmse_test.txt',all_run_rmse_test_avg)
 np.savetxt(resultpath+'avg_rmse_train.txt',all_run_rmse_train_avg)
 print "The test rmse across all runs", all_run_rmse_test_avg
