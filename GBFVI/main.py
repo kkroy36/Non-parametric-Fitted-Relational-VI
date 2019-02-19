@@ -23,15 +23,15 @@ path="C://Users//sxd170431//Desktop//Work//Projects//Relational_RL//Results//"
 """*******************************************************************************************************"""
 
 simulator="logistics"
-trees=3
+trees=5
 batch_size=10
 iters=50
 loss="LS"
 no_of_runs=30
 policy=0
 no_of_state_actions_average=30
-test_trajectory_length=10
-burn_in_no_of_traj=5
+test_trajectory_length=5
+burn_in_no_of_traj=10
 test_explore=0.1
 treeDepth=1
 """*******************************************************************************************************"""
