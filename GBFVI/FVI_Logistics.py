@@ -36,9 +36,9 @@ class FVI(object):
         self.current_run=run_latest
         self.test_trajectory_no=test_trajectory_length
         self.burn_in_no_of_traj=burn_in_no_of_traj
-        #self.actions_all=['move','unload','load']
+        self.actions_all=['move','unload','load']
         """Blocks world"""
-        self.actions_all = ['putDown']
+        #self.actions_all = ['putDown']
         
         """Exploration and exploitation probabilities for traina nd test trajectories"""
         self.exploit=policy
@@ -75,7 +75,7 @@ class FVI(object):
         '''
         reversed_trajectory = trajectory[::-1]
         number_of_transitions = len(reversed_trajectory)
-        immediate_reward = -1
+        immediate_reward = 0
         total = 0.0
         if not AVI:  # if not AVI i.e. for first iteration perform value iteration for initial values
             # while True:
@@ -134,7 +134,7 @@ class FVI(object):
         '''
         reversed_trajectory = trajectory[::-1]
         number_of_transitions = len(reversed_trajectory)
-        immediate_reward = -1
+        immediate_reward = 0
         
         """Calculate the original Q-values from Bellman backup equation"""
         for i in range(number_of_transitions):
@@ -259,14 +259,14 @@ class FVI(object):
             print "State action: ", state_action
             state.get_all_actions()
             action_values = []
-            #all_actions = [item[:-1] for item in state.all_actions] #remove periods from action predicates for logistics
+            all_actions = [item[:-1] for item in state.all_actions] #remove periods from action predicates for logistics
             
-            """blocks world changes"""
-            all_actions = []
-            for action in state.all_actions:
-                action_string = "putDown(s"+str(self.state_number)+","+str(action[0])+","+str(action[1])+")."
-                all_actions.append(action_string)
-            all_actions = [item[:-1] for item in all_actions]
+#            """blocks world changes"""
+#            all_actions = []
+#            for action in state.all_actions:
+#                action_string = "putDown(s"+str(self.state_number)+","+str(action[0])+","+str(action[1])+")."
+#                all_actions.append(action_string)
+#            all_actions = [item[:-1] for item in all_actions]
             
             
             for action in all_actions:
@@ -419,7 +419,7 @@ class FVI(object):
         self.model = reg
         self.trees_latest=deepcopy(self.model.trees)
         #####raw_input("BURN IN FINISHED")
-        self.explore=0.3
+        self.explore=0.9
         self.AVI()
         if self.transfer:
             self.AVI()
@@ -427,7 +427,7 @@ class FVI(object):
     def compute_bellman_error(self, trajectories,aggregate='avg'):
         '''computes max bellman error for every iteration'''
         bellman_errors = []
-        immediate_reward = -1
+        immediate_reward = 0
         discount_factor = 0.99
         for trajectory in trajectories:
             number_of_transitions = len(trajectory)
@@ -469,7 +469,7 @@ class FVI(object):
         temp_values=deepcopy(values)
         reversed_trajectory = trajectory[::-1]
         number_of_transitions = len(reversed_trajectory)
-        immediate_reward = -1
+        immediate_reward = 0
         
         #self.print_tree(self.model)
         train_errors = []
@@ -574,19 +574,13 @@ class FVI(object):
                     start = clock()
                     trajectory = []
                     while not state.goal():
-                        #print ("new state action")
                         fp.write("="*80+"\n")
                         s_number = state.state_number
                         s_facts = state.get_state_facts()
-                        #print "state:",state.get_state_facts()
                         state_action_pair = state.execute_random_action(actn_dist=(1-self.explore))
-                        #print "state_action_pair", state_action_pair[0].state_number
                         state = state_action_pair[0]  # state
-                        #print "state", state.state_number
                         # action and remove period
                         action = state_action_pair[1][0][:-1]
-                        #print "action:",action
-                        #raw_input()
                         fp.write(str(state.get_state_facts())+"\n")
                         trajectory.append((s_number, s_facts+[action]))
                         end = clock()
@@ -617,9 +611,6 @@ class FVI(object):
                     #print "The  trajectory is", trajectory
                     trajectories.append(trajectory)
                     if within_time:
-                        #print "*"*40+str("trajectory complete")+"*"*40
-                        #print (trajectory)
-                        #raw_input()
                         self.init_values(values, trajectory)
                         #totals.append(self.compute_value_of_trajectory(
                         #    values, trajectory, AVI=True))
@@ -669,8 +660,6 @@ class FVI(object):
             targets = self.get_targets(examples)
             self.model.setTargets(targets)
             self.model.learn(facts, examples, bk)
-            #self.print_tree(self.model)
-            #raw_input()
             
             #print "self.trees_latest before assignment"
             #print "************************************"

@@ -17,7 +17,7 @@ class Tower():
 
     def __init__(self,number):
         self.tower_number = number
-        self.block_stack = [Block(self.tower_number+str(i)) for i in range(random.randint(1,3))]
+        self.block_stack = [Block(self.tower_number+str(i)) for i in range(random.randint(1,2))]
         top_block = Block(self.tower_number+str(len(self.block_stack)+1))
         top_block.set_clear()
         self.block_stack.append(top_block)
@@ -51,7 +51,8 @@ class Tower():
     
 class Blocks_world():
 
-    bk = ["on(+state,+block,-block)",
+    bk = ["on(+state,+tower,+block,-block)",
+          "on(+state,+tower,-block,+block)",
           "putDown(state,tower,block)"]
 
     def __init__(self,number=1,start=False):
@@ -77,6 +78,7 @@ class Blocks_world():
             print (tower)
 
     def execute_action(self,action):
+        
         self.state_number += 1
         tower = action[0]
         block = action[1]
@@ -93,7 +95,8 @@ class Blocks_world():
             blocks = tower.get_blocks()
             n_blocks = len(blocks)
             for i in range(n_blocks-1):
-                facts.append("on(s"+str(self.state_number)+",b"+blocks[i].block_number+",b"+blocks[i+1].block_number+")")
+                #block i+1 is on block i on(S,A,B) means B is on A in stat S
+                facts.append("on(s"+str(self.state_number)+",t"+tower.tower_number+",b"+blocks[i].block_number+",b"+blocks[i+1].block_number+")")
         return facts
 
     def sample(self,pdf):
@@ -101,9 +104,9 @@ class Blocks_world():
         R = max(i for r in [random.random()] for i,c in cdf if c <= r)
         return R
 
-    def execute_random_action(self):
+    def execute_random_action(self,actn_dist=0.5):
         self.get_all_actions()
-        if random.random() > 0.9:
+        if random.random() > actn_dist:
             #random_actions = []
             #action_potentials = []
             '''
@@ -119,6 +122,8 @@ class Blocks_world():
             sampled_action = self.sample(probability_distribution_function)
             sampled_action_string = "putDown(s"+str(self.state_number)+","+str(sampled_action[0])+","+str(sampled_action[1])+")."
             new_state = self.execute_action(sampled_action)
+            #print ("state_number incremented when executing action: ",new_state.state_number)
+            #print ("new_state facts",new_state.get_state_facts())
             actions_not_executed = [action for action in self.all_actions if action != sampled_action]
             return (new_state, [sampled_action_string], actions_not_executed)
         else:
@@ -128,7 +133,9 @@ class Blocks_world():
                     action = (tower,block)
                     action_string = "putDown(s"+str(self.state_number)+","+str(action[0])+","+str(action[1])+")."
                     new_state = self.execute_action(action)
-                    actions_not_executed = [action for action in self.all_actions if action != action]
+                    #print ("state_number incremented when executing action: ",new_state.state_number)
+                    #print ("new_state facts",new_state.get_state_facts())
+                    actions_not_executed = [item for item in self.all_actions if item != action]
                     return (new_state, [action_string], actions_not_executed)
                 else:
                     N = len(self.all_actions)
@@ -138,6 +145,8 @@ class Blocks_world():
                     sampled_action = self.sample(probability_distribution_function)
                     sampled_action_string = "putDown(s"+str(self.state_number)+","+str(sampled_action[0])+","+str(sampled_action[1])+")."
                     new_state = self.execute_action(sampled_action)
+                    #print ("state_number incremented when executing action: ",new_state.state_number)
+                    #print ("new_state facts",new_state.get_state_facts())
                     actions_not_executed = [action for action in self.all_actions if action != sampled_action]
                     return (new_state, [sampled_action_string], actions_not_executed)
                     

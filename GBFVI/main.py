@@ -22,18 +22,18 @@ path="C://Users//sxd170431//Desktop//Work//Projects//Relational_RL//Results//"
 """Parameters provided by user for running the Fitted Value Iteration Code"""
 """*******************************************************************************************************"""
 
-simulator="logistics"
-trees=5
+simulator="blocks"
+trees=1
 batch_size=10
-iters=50
+iters=5
 loss="LS"
-no_of_runs=30
+no_of_runs=1
 policy=0
-no_of_state_actions_average=30
+no_of_state_actions_average=2
 test_trajectory_length=5
 burn_in_no_of_traj=10
 test_explore=0.1
-treeDepth=1
+treeDepth=2
 """*******************************************************************************************************"""
 
 """Data structures for collecting statistics accross the runs"""
