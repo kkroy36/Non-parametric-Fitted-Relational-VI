@@ -153,35 +153,37 @@ class Logic(object):
                 variable = False #check if data type is variable or constant
                 if literalTypeSpecification[i][0]!='[':
                     variable = True
-                    if variable: #if data type is variable
-                        mode = literalTypeSpecification[i][0] #get mode + or -
-                        variableType = literalTypeSpecification[i][1:] #get variable type
-                        if mode == '+': #variable must be an already existing variable in the clause of same type if exists
-                            variableOfSameTypeInClause = [var for var in clauseVariables if Utils.data.variableType[var]==variableType] #get all clause variables of same type
-                            if variableOfSameTypeInClause: #if variables of same type exist in clause
-                                testSpecification.append(variableOfSameTypeInClause)
-                            else:
-                                newVar = None
-                                while True:
-                                    newVar = sample(Utils.UniqueVariableCollection,1)
-                                    if newVar[0] not in clauseVariables:
-                                        break
-                                testSpecification.append([newVar[0]])
-                        elif mode == '-': #use new variable
+                if variable: #if data type is variable
+                    mode = literalTypeSpecification[i][0] #get mode + or -
+                    variableType = literalTypeSpecification[i][1:] #get variable type
+                    if mode == '+': #variable must be an already existing variable in the clause of same type if exists
+                        variableOfSameTypeInClause = [var for var in clauseVariables if Utils.data.variableType[var]==variableType] #get all clause variables of same type
+                        if variableOfSameTypeInClause: #if variables of same type exist in clause
+                            testSpecification.append(variableOfSameTypeInClause)
+                        else:
                             newVar = None
                             while True:
                                 newVar = sample(Utils.UniqueVariableCollection,1)
                                 if newVar[0] not in clauseVariables:
                                     break
                             testSpecification.append([newVar[0]])
-                    else: #if data type is constant
-                        listToAppend = literalTypeSpecification[i][1:-1].split(';')
-                        testSpecification.append(listToAppend)
+                    if mode == '-': #use new variable
+                        newVar = None
+                        while True:
+                            newVar = sample(Utils.UniqueVariableCollection,1)
+                            if newVar[0] not in clauseVariables:
+                                break
+                        testSpecification.append([newVar[0]])
+                else: #if data type is constant
+                    listToAppend = literalTypeSpecification[i][1:-1].split(';')
+                    testSpecification.append(listToAppend)
                 testVariablesAndConstantsForMode =  Utils.cartesianProduct(testSpecification)
-                testVariablesAndConstants.append(testVariablesAndConstantsForMode)
-        print (literalName)
-        print (testVariablesAndConstants)
-        raw_input()
+            #print (testVariablesAndConstantsForMode)
+            #raw_input()
+            testVariablesAndConstants += testVariablesAndConstantsForMode
+        #print (literalName)
+        #print (testVariablesAndConstants)
+        #raw_input()
         literalCandidates = []
         for item in testVariablesAndConstants: #form predicates and return all the test candidates for this literal
             literalCandidate = literalName+"("+",".join(item)+")"
