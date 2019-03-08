@@ -38,9 +38,9 @@ class FVI(object):
         self.burn_in_no_of_traj=burn_in_no_of_traj
         #self.actions_all=['move','unload','load']
         """Blocks world"""
-        self.actions_all = ['putDown']
+        self.actions_all = ['putDown','stack']
         
-        """Exploration and exploitation probabilities for traina nd test trajectories"""
+        """Exploration and exploitation probabilities for train and test trajectories"""
         self.exploit=policy
         self.explore=1-self.exploit
         self.test_explore=test_explore
@@ -58,21 +58,17 @@ class FVI(object):
         self.test_trajectories_output = []
         #self.test_trajetories_mismatches = []
         
-        """These contain true and infered Q(s,a) values for just the first state action pair in the test trajectory"""
-        #self.true_start_state_action_val=[]
-        #self.inf_start_state_action_val=[]
-        #self.test_start_error_state_action=[]
-        
         """This is the path where results for a particular run would be stored"""
         self.resultpath=path+self.simulator+"//Runs_"+str(runs)+"//Policy_"+str(policy)+"//trees_"+str(self.trees)+"//"+self.loss+"//"
         
         self.compute_transfer_model()
                 
 
-    def compute_value_of_trajectory(self, values, trajectory, discount_factor=0.99, goal_value=1.0, AVI=False):
+    def compute_value_of_trajectory(self, values, trajectory, discount_factor=0.99, goal_value=10, AVI=False):
         '''computes the value of a trajectory
            by value iteration until convergence
         '''
+        #print ("trajectory:",trajectory)
         reversed_trajectory = trajectory[::-1]
         number_of_transitions = len(reversed_trajectory)
         immediate_reward = -1
@@ -89,6 +85,10 @@ class FVI(object):
                     value_of_state = immediate_reward + discount_factor * next_state_value  # V(S) = R(S) + gamma*goal_value
                     key = (current_state_number, tuple(current_state[:-1]))
                     total += value_of_state
+                    #print (number_of_transitions-i,value_of_state)
+                    #print ("current_action",current_action)
+                    #print ("current_state",current_state)
+                    #raw_input()
                     values[current_action][key] = value_of_state
                 else:
                     next_state_number = reversed_trajectory[i-1][0]
@@ -101,6 +101,10 @@ class FVI(object):
                     value_of_state = immediate_reward + discount_factor*next_state_value ## Q(S,a) = R(S) + gamma*Q_hat(S',a')
                     key = (current_state_number, tuple(current_state[:-1]))
                     total += value_of_state
+                    #print (number_of_transitions-i,value_of_state)
+                    #print ("current_action",current_action)
+                    #print ("current_state",current_state)
+                    #raw_input()
                     values[current_action][key] = value_of_state
             
         elif AVI:  # perform value iteration by infering value of next state for value iteration from fiitted model
@@ -111,30 +115,38 @@ class FVI(object):
                 next_state_number = trajectory[i+1][0]
                 next_state = trajectory[i+1][1][:-1]
                 next_state_action = trajectory[i+1][1][-1]
-                #print 'current_state,current_action.next_state,next_state_action',state,state_action,next_state,next_state_action
+                #print ('current_state,current_action,next_state,next_state_action',state,state_action,next_state,next_state_action)
                 facts = list(next_state)
                 examples = [next_state_action+" "+str(0.0)]
                 value_of_next_state = 0
                 try:
                     self.model.infer(facts, examples)
                     value_of_next_state = self.model.testExamples[next_state_action.split('(')[0]][next_state_action]
+                    #print ("action:",next_state_action)
+                    #print (facts)
+                    #self.print_tree(self.model)
+                    #print ("Value of Next state",value_of_next_state)
                 except:
                     value_of_next_state = 0
                     #self.print_tree(self.model)
-                    #####raw_input("compute_value_of_trajectory")
+                    #raw_input("compute_value_of_trajectory")
                 value_of_state = immediate_reward + discount_factor * value_of_next_state  # Q(S,a) = R(S) + gamma*Q_hat(S',a')
                 key = (state_number, tuple(state[:-1]))
                 total += value_of_state
+                #print ("Value of the current state",value_of_state)
+                #raw_input()
+                #print ("*"*80)
                 values[state_action][key] = value_of_state
         return (total)
                 
-    def compute_value_of_test_trajectory(self, values, trajectory, discount_factor=0.99, goal_value=1.0, AVI=False):
+    def compute_value_of_test_trajectory(self, values, trajectory, discount_factor=0.99, goal_value=10, AVI=False):
         '''computes the value of a trajectory
            by value iteration until convergence
         '''
         reversed_trajectory = trajectory[::-1]
         number_of_transitions = len(reversed_trajectory)
         immediate_reward = -1
+    
         
         """Calculate the original Q-values from Bellman backup equation"""
         for i in range(number_of_transitions):
@@ -186,7 +198,7 @@ class FVI(object):
             except:
                 value_of_current_state = 0
                 #self.print_tree(self.model)
-                #####raw_input("compute_value_of_test_trajectory")
+                raw_input("compute_value_of_test_trajectory")
             #infered_state_value = immediate_reward + discount_factor * value_of_next_state  # V(S) = R(S) + gamma*V_hat(S')
             infered_state_value = value_of_current_state
             key = (state_number, tuple(state[:-1]))
@@ -264,7 +276,7 @@ class FVI(object):
             """blocks world changes"""
             all_actions = []
             for action in state.all_actions:
-                action_string = "putDown(s"+str(self.state_number)+","+str(action[0])+","+str(action[1])+")."
+                action_string = action[0]+"(s"+str(self.state_number)+","+str(action[1])+","+str(action[2])+")."
                 all_actions.append(action_string)
             all_actions = [item[:-1] for item in all_actions]
             
@@ -387,7 +399,7 @@ class FVI(object):
                     elif self.simulator == "wumpus" and time_elapsed > 1:
                         within_time = False
                         break
-                    elif self.simulator == "blocks" and time_elapsed > 1:
+                    elif self.simulator == "blocks" and time_elapsed > 3:
                         within_time = False
                         break
                     elif self.simulator == "blackjack" and time_elapsed > 1:
@@ -399,11 +411,15 @@ class FVI(object):
                     elif self.simulator == "net_admin" and time_elapsed > 1:
                         within_time = False
                         break
+                    #print "within_time flag is", within_time
                 if within_time:
                     #print "The trajectory is",trajectory
                     #raw_input()
+                    #print ("state_action within time")
                     self.init_values(values, trajectory)
                     total = self.compute_value_of_trajectory(values, trajectory)
+                    #print (trajectory)
+                    #raw_input()
                     self.state_number += len(trajectory)+1
                     for target in values:
                         for state in values[target]:
@@ -418,8 +434,9 @@ class FVI(object):
         reg.learn(facts, examples, bk)
         self.model = reg
         self.trees_latest=deepcopy(self.model.trees)
-        #####raw_input("BURN IN FINISHED")
-        self.explore=0.3
+        self.print_tree(self.model)
+        raw_input("BURN IN FINISHED")
+        self.explore=1
         self.AVI()
         if self.transfer:
             self.AVI()
@@ -464,7 +481,7 @@ class FVI(object):
         elif aggregate == 'max':
             return (max(bellman_errors))
         
-    def compute_train_error(self,values,trajectory, discount_factor=0.99, goal_value=1.0):
+    def compute_train_error(self,values,trajectory, discount_factor=0.99, goal_value=10):
         
         temp_values=deepcopy(values)
         reversed_trajectory = trajectory[::-1]
@@ -669,8 +686,6 @@ class FVI(object):
             targets = self.get_targets(examples)
             self.model.setTargets(targets)
             self.model.learn(facts, examples, bk)
-            #self.print_tree(self.model)
-            #raw_input()
             
             #print "self.trees_latest before assignment"
             #print "************************************"
@@ -693,10 +708,11 @@ class FVI(object):
                       self.model.trees[target]= deepcopy(self.trees_latest[target])
                       self.model.addTarget(target)
                    
-            #self.print_tree(self.model)
+            self.print_tree(self.model)
+            raw_input("Value Iteration"+str(i))
             
             self.trees_latest=deepcopy(self.model.trees)
-            #print "************************************"
+            print "************************************"
             #print "self.trees_latest after assignment"
             #for item in self.model.targets:
             #    trees=self.trees_latest[item]
@@ -739,6 +755,9 @@ class FVI(object):
                     #print "************* i is", i
                     #print "The  test trajectory is", trajectory 
                     #####raw_input()
+                    #print ("*"*40+str("trajectory complete")+"*"*40)
+                    #print (trajectory)
+                    #raw_input()
                     self.init_values(values, trajectory)
                     self.test_trajectories_output.append(self.get_trajectory_mismatch(test_trajectory))
                     #self.test_trajectories_output += [test_trajectory_output[0]]

@@ -1,4 +1,4 @@
-from FVI import FVI
+from FVI_blocks import FVI
 import sys
 import os
 import numpy as np
@@ -24,16 +24,16 @@ path="C://Users//sxd170431//Desktop//Work//Projects//Relational_RL//Results//"
 
 simulator="blocks"
 trees=1
-batch_size=10
+batch_size=5
 iters=5
 loss="LS"
 no_of_runs=1
-policy=0
+policy_exploit=0
 no_of_state_actions_average=2
 test_trajectory_length=5
-burn_in_no_of_traj=10
-test_explore=0.1
-treeDepth=2
+burn_in_no_of_traj=5
+test_explore=0.3
+treeDepth=3
 """*******************************************************************************************************"""
 
 """Data structures for collecting statistics accross the runs"""
@@ -54,12 +54,12 @@ np.set_printoptions(threshold=np.inf)
 for run in range(0,no_of_runs):
   #try:
       print "Beginning run no", run  
-      resultpath=path+simulator+"//Runs_"+str(no_of_runs)+"//Policy_"+str(policy)+"//trees_"+str(trees)+"//"+loss+"//"
-      ind_runpath=path+simulator+"//Runs_"+str(no_of_runs)+"//Policy_"+str(policy)+"//trees_"+str(trees)+"//"+loss+"//"+"Run"+str(run)+"//"
+      resultpath=path+simulator+"//Runs_"+str(no_of_runs)+"//Policy_"+str(policy_exploit)+"//trees_"+str(trees)+"//"+loss+"//"
+      ind_runpath=path+simulator+"//Runs_"+str(no_of_runs)+"//Policy_"+str(policy_exploit)+"//trees_"+str(trees)+"//"+loss+"//"+"Run"+str(run)+"//"
       """Deletes the previous run informations"""
       if (os.path.isdir(ind_runpath)):
           rmtree(ind_runpath)
-      model=FVI(simulator=simulator,trees=trees,batch_size=batch_size,number_of_iterations=iters, path=path,runs=no_of_runs, policy=policy,run_latest=run,loss=loss,test_trajectory_length=test_trajectory_length,burn_in_no_of_traj=burn_in_no_of_traj,test_explore=0.1,treeDepth=treeDepth) #logistics default
+      model=FVI(simulator=simulator,trees=trees,batch_size=batch_size,number_of_iterations=iters, path=path,runs=no_of_runs, policy=policy_exploit,run_latest=run,loss=loss,test_trajectory_length=test_trajectory_length,burn_in_no_of_traj=burn_in_no_of_traj,test_explore=0.1,treeDepth=treeDepth) #logistics default
       """Path where the results will be saved"""
       #resultpath=path+model.simulator+"/Runs_"+str(no_of_runs)+"/Policy_"+str(policy)+"/trees_"+str(model.trees)+"/"+model.loss+"/"
       """Statistics for a single run"""

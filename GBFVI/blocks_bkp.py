@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Mar 07 17:24:34 2019
+
+@author: sxd170431
+"""
+
 import random
 from copy import deepcopy
 
@@ -65,10 +72,11 @@ class Tower():
     
 class Blocks_world():
 
-    bk = ["clear(+state,-tower,+block)",
-          "clear(+state,+tower,+block)",
-          "maxtower(+state,+tower)",
-          "maxtower(+state,-tower)",
+    bk = ["on(+state,+tower,+block,-block)",
+          "on(+state,+tower,-block,+block)",
+          "onTable(+state,+block)",
+          "clear(+state,+block)",
+          "height(+state,+tower,#h)",
           "putDown(state,tower,block)",
           "stack(state,tower,block)"]
 
@@ -108,32 +116,20 @@ class Blocks_world():
                 for block in blocks:
                     if self.valid((action,tower,block)):
                         self.all_actions.append((action,tower,block))
-    def max_tower(self):
-        '''returns maximum height tower'''
-        max_tower = self.towers[0]
-        for tower in self.towers:
-            if len(tower.get_blocks()) >= len(max_tower.get_blocks()):
-                max_tower = tower
-        return (max_tower)
+        
     
     def add_tower(self,tower):
         self.towers.append(tower)
 
     def goal(self):
         #print "length of towers", len(self.towers)
-        blocks = []
         for tower in self.towers:
-            blocks += tower.get_blocks()
-        blocks = list(set(blocks))
-        for tower in self.towers:
-            if len(tower.get_blocks()) == len(blocks):
+            if tower.too_high():
                 #print ("goal checking single block",tower.block_stack)
                 #raw_input()
-                #self.get_state_facts()
-                #raw_input("goal")
-                return True
+                return False
             #print ("goal checking greater than 1 block", tower.block_stack)
-        return False
+        return True
 
     def print_world(self):
         for tower in self.towers:
@@ -193,31 +189,19 @@ class Blocks_world():
 
     def get_state_facts(self):
         facts = []
-        max_height = 0
-        max_tower = None
         for tower in self.towers:
             blocks = tower.get_blocks()
             n_blocks = len(blocks)
-            if n_blocks >= max_height:
-                max_height = n_blocks
-                max_tower = tower
-            '''
-            if n_blocks == 2:
-                facts.append("heighttwo(s"+str(self.state_number)+",t"+tower.tower_number+")")
-            elif n_blocks > 2:
-                facts.append("heightgreaterthantwo(s"+str(self.state_number)+",t"+tower.tower_number+")")
-            '''
             last_block_in_tower = tower.get_top_block()
             for i in range(n_blocks-1):
                 if blocks[i].clear:
-                    facts.append("clear(s"+str(self.state_number)+",t"+str(tower.tower_number)+",b"+blocks[i].block_number+")")
+                    facts.append("clear(s"+str(self.state_number)+",b"+blocks[i].block_number+")")
                 if blocks[i].table:
-                    facts.append("onTable(s"+str(self.state_number)+",t"+str(tower.tower_number)+",b"+blocks[i].block_number+")")
+                    facts.append("onTable(s"+str(self.state_number)+",b"+blocks[i].block_number+")")
                 facts.append("on(s"+str(self.state_number)+",t"+tower.tower_number+",b"+blocks[i].block_number+",b"+blocks[i+1].block_number+")")
             facts.append("clear(s"+str(self.state_number)+",b"+last_block_in_tower.block_number+")")
             if n_blocks == 1:
-               facts.append("onTable(s"+str(self.state_number)+",b"+last_block_in_tower.block_number+")")
-        facts.append("maxtower(s"+str(self.state_number)+",t"+str(max_tower.tower_number)+")")
+               facts.append("onTable(s"+str(self.state_number)+",b"+last_block_in_tower.block_number+")") 
             
         '''
         for tower in self.towers:
@@ -236,12 +220,6 @@ class Blocks_world():
                     facts.append("onTable(s"+str(self.state_number)+",b"+blocks[i].block_number+")")
         '''
         return facts
-    
-    def get_top_block_from_other_tower(self):
-        '''gets top block from not max tower'''
-        for tower in self.towers:
-            if tower.tower_number != self.max_tower().tower_number:
-                return tower.get_top_block()
 
     def sample(self,pdf):
         cdf = [(i, sum(p for j,p in pdf if j < i)) for i,_ in pdf]
@@ -278,12 +256,13 @@ class Blocks_world():
             return (new_state, [sampled_action_string], actions_not_executed)
         else:
             for tower in self.towers:
-                block = self.get_top_block_from_other_tower()
-                action = ("stack",self.max_tower(),block)
-                action_string = "stack(s"+str(self.state_number)+","+str(action[1])+","+str(action[2])+")."
-                new_state = self.execute_action(action)
-                actions_not_executed = [item for item in self.all_actions if item != action]
-                return (new_state, [action_string], actions_not_executed)
+                if tower.too_high():
+                    block = tower.get_top_block()
+                    action = ("putDown",tower,block)
+                    action_string = "putDown(s"+str(self.state_number)+","+str(action[1])+","+str(action[2])+")."
+                    new_state = self.execute_action(action)
+                    actions_not_executed = [item for item in self.all_actions if item != action]
+                    return (new_state, [action_string], actions_not_executed)
             '''
             N = len(self.all_actions)
             action_potentials = [1 for i in range(N)]

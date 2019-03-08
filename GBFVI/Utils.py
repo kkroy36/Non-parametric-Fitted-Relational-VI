@@ -111,10 +111,13 @@ class Data(object):
            types can be variable or a list of constants
         '''
         bkWithoutTargets = [line for line in bk if '+' in line or '-' in line]
+        for literalBk in bkWithoutTargets:
+            literalName = literalBk.split('(')[0]
+            self.literals[literalName] = []
         for literalBk in bkWithoutTargets: #for every literal obtain name and type specification
             literalName = literalBk.split('(')[0]
             literalTypeSpecification = literalBk[:-1].split('(')[1].split(',')
-            self.literals[literalName] = literalTypeSpecification
+            self.literals[literalName].append(literalTypeSpecification)
             
     def getLiterals(self):
         '''gets all the literals in the facts'''
