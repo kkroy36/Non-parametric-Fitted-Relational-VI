@@ -110,6 +110,8 @@ class node(object):
         print("pos: ",self.pos)
         print("node depth: ",self.level)
         print("parent: ",self.parent)
+        print ("examples: ",self.examples)
+        print ("facts: ",data.facts)
         print("number of examples at node: ",len(self.examples))
         if self.parent != "root":
             print("test at parent: ",self.parent.test)
@@ -123,8 +125,8 @@ class node(object):
         tests = []
         for literal in literals: #for every literal generate test conditions
             literalName = literal
-            literalTypeSpecification = literals[literal]
-            tests += Logic.generateTests(literalName,literalTypeSpecification,clause) #generate all possible literal, variable and constant combinations
+            literalTypeSpecifications = literals[literal]
+            tests += Logic.generateTests(literalName,literalTypeSpecifications,clause) #generate all possible literal, variable and constant combinations
         if self.parent!="root":
                 tests = [test for test in tests if not test in ancestorTests]
         tests = sorted(list(set(tests)))
