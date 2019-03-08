@@ -144,14 +144,15 @@ class Utils(object):
     def addVariableTypes(literal):
         '''adds type of variables contained in literal'''
         literalName = literal.split('(')[0] #get literal name
-        literalTypeSpecification = Utils.data.literals[literalName] #get background info
+        literalTypeSpecifications = Utils.data.literals[literalName] #get background info
         literalArguments = literal[:-1].split('(')[1].split(',') #get arguments
         numberOfArguments = len(literalArguments)
-        for i in range(numberOfArguments):
-            if literalTypeSpecification[i][0]!='[':
-                variable = literalArguments[i]
-                if variable not in Utils.data.variableType.keys():
-                    Utils.data.variableType[variable] = literalTypeSpecification[i][1:]
+        for literalTypeSpecification in literalTypeSpecifications:
+            for i in range(numberOfArguments):
+                if literalTypeSpecification[i][0]!='[':
+                    variable = literalArguments[i]
+                    if variable not in Utils.data.variableType.keys():
+                        Utils.data.variableType[variable] = literalTypeSpecification[i][1:]
 
     @staticmethod
     def find_nth(haystack, needle, n):
