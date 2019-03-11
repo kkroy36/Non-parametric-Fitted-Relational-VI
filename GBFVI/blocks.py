@@ -66,9 +66,7 @@ class Tower():
 class Blocks_world():
 
     bk = ["clear(+state,-tower,+block)",
-          "clear(+state,+tower,+block)",
           "maxtower(+state,+tower)",
-          "maxtower(+state,-tower)",
           "putDown(state,tower,block)",
           "stack(state,tower,block)"]
 
@@ -214,9 +212,9 @@ class Blocks_world():
                 if blocks[i].table:
                     facts.append("onTable(s"+str(self.state_number)+",t"+str(tower.tower_number)+",b"+blocks[i].block_number+")")
                 facts.append("on(s"+str(self.state_number)+",t"+tower.tower_number+",b"+blocks[i].block_number+",b"+blocks[i+1].block_number+")")
-            facts.append("clear(s"+str(self.state_number)+",b"+last_block_in_tower.block_number+")")
+            facts.append("clear(s"+str(self.state_number)+",t"+str(tower.tower_number)+",b"+last_block_in_tower.block_number+")")
             if n_blocks == 1:
-               facts.append("onTable(s"+str(self.state_number)+",b"+last_block_in_tower.block_number+")")
+               facts.append("onTable(s"+str(self.state_number)+",t"+str(tower.tower_number)+",b"+last_block_in_tower.block_number+")")
         facts.append("maxtower(s"+str(self.state_number)+",t"+str(max_tower.tower_number)+")")
             
         '''

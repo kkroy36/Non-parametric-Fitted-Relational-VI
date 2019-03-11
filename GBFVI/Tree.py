@@ -110,8 +110,8 @@ class node(object):
         print("pos: ",self.pos)
         print("node depth: ",self.level)
         print("parent: ",self.parent)
-        print ("examples: ",self.examples)
-        print ("facts: ",data.facts)
+        #print ("examples: ",self.examples)
+        #print ("facts: ",data.facts)
         print("number of examples at node: ",len(self.examples))
         if self.parent != "root":
             print("test at parent: ",self.parent.test)

@@ -194,6 +194,7 @@ class Logistics(object):  # represents a world state
             return False
         for city in self.cities:
             if city.get_number() == 3 and len(city.unloaded_boxes) > 0:
+                print ("goal reached")
                 #print (city.unloaded_boxes)
                 return True
         return False
@@ -214,7 +215,53 @@ class Logistics(object):  # represents a world state
                 trucks = city.get_trucks()
                 truck.init_boxes(trucks)
                 city.add_truck(truck)
-
+                
+    def valid(self,action):
+        '''checks if the action is valid in that state'''
+        
+        action_description = action.split('(')[0]
+        if action_description == "move":
+            destination_city_number = int(action.split(',')[2][1:-2])
+            #destination_city = City(destination_city_number)
+            move_truck_number = int(action.split(',')[1][1:])
+            truck_in_city = None
+            for city in self.cities:
+                move_truck = city.get_truck(move_truck_number)
+                if move_truck:
+                    #print ("truck in not city", city)
+                    truck_in_city = city
+            if str(truck_in_city)[1:] == str(destination_city_number):
+                return False #cannot move from same city to same city
+        if action_description == "unload":
+            unload_truck_number = int(action.split(',')[2][1:-2])
+            box_number = int(action.split(',')[1][1:])
+            for city in self.cities:
+                unload_truck = city.get_truck(unload_truck_number)
+                if not unload_truck:
+                    #print ("truck not among: ", city.get_trucks())
+                    return False
+                box = unload_truck.get_box(box_number)
+                if not box:
+                    #print ("box not on unload truck: ", truck.get_boxes())
+                    return False
+                #print ("before unloading: ", unload_truck.get_boxes())
+        if action_description == "load":
+            load_truck_number = int(action.split(',')[2][1:-2])
+            box_number = int(action.split(',')[1][1:])
+            for city in self.cities:
+                trucks = city.get_trucks()
+                load_truck = city.get_truck(load_truck_number)
+                if not load_truck:
+                    return False
+                for truck in trucks:
+                    if truck.get_box(box_number):
+                        return False
+                box = city.get_unloaded_box(box_number)
+                if not box:
+                    return False
+                #print ("before loading: ", load_truck.get_boxes())
+        return True
+            
     def get_all_actions(self):
         cities = [City(i+1) for i in range(City.MAX_CITIES)]
         trucks = []
@@ -222,9 +269,12 @@ class Logistics(object):  # represents a world state
             for truck in city.get_trucks():
                 trucks.append(truck)
         move_combinations = self.get_move_combinations(trucks, cities)
+        #print (move_combinations)
+        #raw_input() #currently testing here
         load_combinations = self.get_load_combinations(trucks)
         unload_combinations = self.get_unload_combinations(trucks)
         self.all_actions = unload_combinations + move_combinations + load_combinations
+        self.all_actions = [action for action in self.all_actions if self.valid(action)]
 
     def add_city(self, city):
         if str(city) not in [str(c) for c in self.cities]:

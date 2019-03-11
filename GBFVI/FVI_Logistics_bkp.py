@@ -4,7 +4,7 @@ from shutil import rmtree
 import os
 from math import sqrt
 #from wumpus import Wumpus
-#from blocks import Blocks_world
+from blocks import Blocks_world
 #from blackjack import Game
 #from chain import Chain
 #from net_admin import Admin
@@ -416,8 +416,8 @@ class FVI(object):
                         within_time = False
                         break
                 if within_time:
-                    print "The trajectory is",trajectory
-                    raw_input()
+                    #print "The trajectory is",trajectory
+                    #raw_input()
                     self.init_values(values, trajectory)
                     total = self.compute_value_of_trajectory(values, trajectory)
                     self.state_number += len(trajectory)+1
